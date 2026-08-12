@@ -25,6 +25,8 @@ const passwordLama = ref('')
 const passwordBaru = ref('')
 const konfirmasiPassword = ref('')
 
+const isLogoutModalOpen = ref(false)
+
 function bukaModalPassword() {
   passwordLama.value = ''
   passwordBaru.value = ''
@@ -47,10 +49,13 @@ function simpanPasswordBaru() {
   isPasswordModalOpen.value = false
 }
 
-function handleLogout() {
-  if (confirm('Yakin ingin keluar?')) {
-    alert('Anda berhasil Logout!')
-  }
+function bukaModalLogout() {
+  isLogoutModalOpen.value = true // DIPERBAIKI: Tambah .value
+}
+
+function eksekusiLogout() { // DIPERBAIKI: Fungsi baru untuk proses logout
+  alert('Anda berhasil Logout!')
+  isLogoutModalOpen.value = false
 }
 </script>
 
@@ -89,7 +94,7 @@ function handleLogout() {
 
           <DropdownMenuSeparator />
 
-          <DropdownMenuItem class="dropdown-item logout" @click="handleLogout">
+          <DropdownMenuItem class="dropdown-item logout" @click="bukaModalLogout">
             <LogOut class="menu-icon" />
             <span>Logout</span>
           </DropdownMenuItem>
@@ -97,7 +102,25 @@ function handleLogout() {
       </DropdownMenu>
     </div>
 
-    <Dialog :open="isPasswordModalOpen" @update:open="isPasswordModalOpen = $event">
+    <!-- MODAL LOGOUT -->
+    <Dialog v-model:open="isLogoutModalOpen"> <!-- DIPERBAIKI: Menggunakan v-model:open -->
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Konfirmasi Logout</DialogTitle>
+        </DialogHeader>
+
+        <p class="text-sm text-gray-500">
+          Apakah Anda Yakin Ingin Keluar?
+        </p>
+        <DialogFooter>
+          <Button variant="outline" @click="isLogoutModalOpen = false">Batal</Button>
+          <Button variant="destructive" @click="eksekusiLogout">Ya, Logout</Button> <!-- DIPERBAIKI: Memanggil fungsi eksekusiLogout -->
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    <!-- MODAL GANTI PASSWORD -->
+    <Dialog v-model:open="isPasswordModalOpen">
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Ganti Password</DialogTitle>
@@ -137,6 +160,7 @@ function handleLogout() {
   padding: 12px 24px;
   border-bottom: 1px solid #e5e7eb;
   background-color: #ffffff;
+  margin: 0px 0px 30px 0px;
 }
 
 .navbar-logo {
@@ -173,7 +197,7 @@ function handleLogout() {
 .avatar-box {
   width: 36px;
   height: 36px;
-  border-radius: 50%;
+  border-radius: 30%;
 }
 
 .user-info {

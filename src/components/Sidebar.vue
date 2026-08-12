@@ -26,7 +26,6 @@ import { LayoutDashboard, Folder, Settings, User } from 'lucide-vue-next'
       </Button>
     </nav>
 
-    <!-- Pengaturan -->
     <div class="sidebar-footer">
       <Button class="sidebar-btn">
         <Settings class="icon" />
