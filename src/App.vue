@@ -91,7 +91,7 @@ function hapusData(id) {
 
     <div class="main-wrapper">
       <Navbar />
-
+      
       <main class="content-area">
         <h2>Dashboard</h2>
 

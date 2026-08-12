@@ -62,13 +62,14 @@ function eksekusiLogout() {
 <template>
   <nav class="navbar-container">
     <div class="navbar-logo">
-      BelajarShadcn
+      Vue Shadcn
     </div>
 
     <div class="navbar-menu">
       <a href="#" class="menu-link">Beranda</a>
       <a href="#" class="menu-link">Fitur</a>
-      <a href="#" class="menu-link">Harga</a>
+      <a href="#" class="menu-link">Portofolio</a>
+      <a href="#" class="menu-link">Kontak</a>
     </div>
 
     <div class="navbar-actions">
