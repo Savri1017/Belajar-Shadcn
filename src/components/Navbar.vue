@@ -50,10 +50,10 @@ function simpanPasswordBaru() {
 }
 
 function bukaModalLogout() {
-  isLogoutModalOpen.value = true // DIPERBAIKI: Tambah .value
+  isLogoutModalOpen.value = true 
 }
 
-function eksekusiLogout() { // DIPERBAIKI: Fungsi baru untuk proses logout
+function eksekusiLogout() { 
   alert('Anda berhasil Logout!')
   isLogoutModalOpen.value = false
 }
@@ -102,8 +102,7 @@ function eksekusiLogout() { // DIPERBAIKI: Fungsi baru untuk proses logout
       </DropdownMenu>
     </div>
 
-    <!-- MODAL LOGOUT -->
-    <Dialog v-model:open="isLogoutModalOpen"> <!-- DIPERBAIKI: Menggunakan v-model:open -->
+    <Dialog v-model:open="isLogoutModalOpen"> 
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Konfirmasi Logout</DialogTitle>
@@ -114,12 +113,11 @@ function eksekusiLogout() { // DIPERBAIKI: Fungsi baru untuk proses logout
         </p>
         <DialogFooter>
           <Button variant="outline" @click="isLogoutModalOpen = false">Batal</Button>
-          <Button variant="destructive" @click="eksekusiLogout">Ya, Logout</Button> <!-- DIPERBAIKI: Memanggil fungsi eksekusiLogout -->
+          <Button variant="destructive" @click="eksekusiLogout">Ya, Logout</Button> 
         </DialogFooter>
       </DialogContent>
     </Dialog>
 
-    <!-- MODAL GANTI PASSWORD -->
     <Dialog v-model:open="isPasswordModalOpen">
       <DialogContent>
         <DialogHeader>
