@@ -1,9 +1,10 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 
 import Sidebar from '@/components/Sidebar.vue'
 import Navbar from '@/components/Navbar.vue'
 import { Button } from '@/components/ui/button'
+import { useUserStore } from '@/stores/userStore' // 1. Import Pinia Store
 
 import {
   Table,
@@ -22,17 +23,19 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 
-const isModalOpen = ref(false)
-const dataPengguna = ref([
-  { id: 1, nama: 'Budi Santoso', email: 'budi@gmail.com', peran: 'Admin' },
-  { id: 2, nama: 'Siti Rahma', email: 'siti@gmail.com', peran: 'User' },
-  { id: 3, nama: 'Andi Wijaya', email: 'andi@gmail.com', peran: 'User' },
-])
+// 2. Inisialisasi Store
+const userStore = useUserStore()
 
+// State lokal khusus untuk kontrol UI Form/Modal
+const isModalOpen = ref(false)
 const namaInput = ref('')
 const emailInput = ref('')
 const peranInput = ref('User')
 const idEdit = ref(null)
+
+onMounted(() => {
+  userStore.fetchPengguna()
+})
 
 function bukaModalTambah() {
   idEdit.value = null
@@ -56,23 +59,18 @@ function simpanData() {
     return
   }
 
+  const payload = {
+    nama: namaInput.value,
+    email: emailInput.value,
+    peran: peranInput.value,
+  }
+
   if (idEdit.value !== null) {
-    const index = dataPengguna.value.findIndex(item => item.id === idEdit.value)
-    if (index !== -1) {
-      dataPengguna.value[index] = {
-        id: idEdit.value,
-        nama: namaInput.value,
-        email: emailInput.value,
-        peran: peranInput.value
-      }
-    }
+    // Panggil action update dari Pinia
+    userStore.updatePengguna(idEdit.value, payload)
   } else {
-    dataPengguna.value.push({
-      id: Date.now(),
-      nama: namaInput.value,
-      email: emailInput.value,
-      peran: peranInput.value
-    })
+    // Panggil action tambah dari Pinia
+    userStore.tambahPengguna(payload)
   }
 
   isModalOpen.value = false
@@ -80,7 +78,8 @@ function simpanData() {
 
 function hapusData(id) {
   if (confirm('Yakin ingin menghapus data ini?')) {
-    dataPengguna.value = dataPengguna.value.filter(item => item.id !== id)
+    // Panggil action hapus dari Pinia
+    userStore.hapusPengguna(id)
   }
 }
 </script>
@@ -109,10 +108,12 @@ function hapusData(id) {
                   <TableHead>Nama</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Peran</TableHead>
+                  <TableHead>Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                <TableRow v-for="(item, index) in dataPengguna" :key="item.id">
+                <!-- Membaca data langsung dari userStore.dataPengguna -->
+                <TableRow v-for="(item, index) in userStore.dataPengguna" :key="item.id">
                   <TableCell>{{ index + 1 }}</TableCell>
                   <TableCell>{{ item.nama }}</TableCell>
                   <TableCell>{{ item.email }}</TableCell>
@@ -212,7 +213,6 @@ function hapusData(id) {
   align-items: center;
   margin-bottom: 20px;
   gap: 20px;
- 
 }
 
 .table-header-box h3 {
