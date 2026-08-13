@@ -274,6 +274,6 @@ function hapusData(id) {
 }
 
 .delete-buttons:hover {
-  background-color: rgb(156, 30, 30);
+  background-color: rgb(204, 21, 21);
 }
 </style>
