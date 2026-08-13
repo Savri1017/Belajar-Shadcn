@@ -118,10 +118,10 @@ function hapusData(id) {
                   <TableCell>{{ item.email }}</TableCell>
                   <TableCell>{{ item.peran }}</TableCell>
                   <TableCell class="action-buttons">
-                    <Button variant="outline" size="sm" @click="editData(item)">
+                    <Button variant="outline" size="sm" @click="editData(item)" class="edit-buttons">
                       Edit
                     </Button>
-                    <Button variant="destructive" size="sm" @click="hapusData(item.id)">
+                    <Button variant="destructive" size="sm" @click="hapusData(item.id)" class="delete-buttons">
                       Hapus
                     </Button>
                   </TableCell>
@@ -263,5 +263,17 @@ function hapusData(id) {
 
 .input-field:focus {
   border-color: #2563eb;
+}
+
+.edit-buttons {
+  background-color: rgb(246, 246, 28);
+}
+
+.edit-buttons:hover {
+  background-color: rgb(188, 188, 22);
+}
+
+.delete-buttons:hover {
+  background-color: rgb(156, 30, 30);
 }
 </style>
