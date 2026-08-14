@@ -85,7 +85,6 @@ async function simpanData() {
 
 async function hapusData(id) {
   if (confirm('Yakin ingin menghapus data ini?')) {
-    // Panggil Action Hapus ke Pinia Store
     if (userStore.hapusPengguna) {
       await userStore.hapusPengguna(id)
     }
