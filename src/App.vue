@@ -1,9 +1,10 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 
 import Sidebar from '@/components/Sidebar.vue'
 import Navbar from '@/components/Navbar.vue'
 import { Button } from '@/components/ui/button'
+import { useUserStore } from '@/stores/userStore'
 
 import {
   Table,
@@ -22,17 +23,22 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 
-const isModalOpen = ref(false)
-const dataPengguna = ref([
-  { id: 1, nama: 'Budi Santoso', email: 'budi@gmail.com', peran: 'Admin' },
-  { id: 2, nama: 'Siti Rahma', email: 'siti@gmail.com', peran: 'User' },
-  { id: 3, nama: 'Andi Wijaya', email: 'andi@gmail.com', peran: 'User' },
-])
+// Inisialisasi Pinia Store
+const userStore = useUserStore()
 
+// State lokal khusus manajemen UI Modal & Form
+const isModalOpen = ref(false)
 const namaInput = ref('')
 const emailInput = ref('')
 const peranInput = ref('User')
 const idEdit = ref(null)
+
+// Ambil data pengguna dari Pinia/Laravel saat komponen pertama kali dipasang
+onMounted(() => {
+  if (userStore.fetchPengguna) {
+    userStore.fetchPengguna()
+  }
+})
 
 function bukaModalTambah() {
   idEdit.value = null
@@ -50,37 +56,39 @@ function editData(item) {
   isModalOpen.value = true
 }
 
-function simpanData() {
+async function simpanData() {
   if (!namaInput.value || !emailInput.value) {
     alert('Nama dan Email wajib diisi!')
     return
   }
 
+  const payload = {
+    nama: namaInput.value,
+    email: emailInput.value,
+    peran: peranInput.value,
+  }
+
   if (idEdit.value !== null) {
-    const index = dataPengguna.value.findIndex(item => item.id === idEdit.value)
-    if (index !== -1) {
-      dataPengguna.value[index] = {
-        id: idEdit.value,
-        nama: namaInput.value,
-        email: emailInput.value,
-        peran: peranInput.value
-      }
+    // Panggil Action Update ke Pinia Store
+    if (userStore.updatePengguna) {
+      await userStore.updatePengguna(idEdit.value, payload)
     }
   } else {
-    dataPengguna.value.push({
-      id: Date.now(),
-      nama: namaInput.value,
-      email: emailInput.value,
-      peran: peranInput.value
-    })
+    // Panggil Action Tambah ke Pinia Store
+    if (userStore.tambahPengguna) {
+      await userStore.tambahPengguna(payload)
+    }
   }
 
   isModalOpen.value = false
 }
 
-function hapusData(id) {
+async function hapusData(id) {
   if (confirm('Yakin ingin menghapus data ini?')) {
-    dataPengguna.value = dataPengguna.value.filter(item => item.id !== id)
+    // Panggil Action Hapus ke Pinia Store
+    if (userStore.hapusPengguna) {
+      await userStore.hapusPengguna(id)
+    }
   }
 }
 </script>
@@ -99,10 +107,18 @@ function hapusData(id) {
           <div class="table-card">
             <div class="table-header-box">
               <h3>Daftar Pengguna</h3>
-              <Button class="action-button-modal" variant="outline" @click="bukaModalTambah">Tambah Pengguna</Button>
+              <Button class="action-button-modal" variant="outline" @click="bukaModalTambah">
+                Tambah Pengguna
+              </Button>
             </div>
 
-            <Table>
+            <!-- Indikator Loading saat mengambil data dari API -->
+            <div v-if="userStore.isLoading" class="loading-state">
+              Sedang memuat data dari database...
+            </div>
+
+            <!-- Tabel Data dari Pinia Store -->
+            <Table v-else>
               <TableHeader>
                 <TableRow>
                   <TableHead>No</TableHead>
@@ -113,7 +129,10 @@ function hapusData(id) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                <TableRow v-for="(item, index) in dataPengguna" :key="item.id">
+                <TableRow 
+                  v-for="(item, index) in userStore.dataPengguna" 
+                  :key="item.id"
+                >
                   <TableCell>{{ index + 1 }}</TableCell>
                   <TableCell>{{ item.nama }}</TableCell>
                   <TableCell>{{ item.email }}</TableCell>
@@ -132,6 +151,7 @@ function hapusData(id) {
           </div>
         </div>
 
+        <!-- Modal Dialog Form -->
         <Dialog :open="isModalOpen" @update:open="isModalOpen = $event">
           <DialogContent class="modal-box">
             <DialogHeader>
@@ -232,6 +252,12 @@ function hapusData(id) {
 .action-buttons {
   display: flex;
   gap: 8px;
+}
+
+.loading-state {
+  padding: 16px;
+  color: #6b7280;
+  font-size: 0.875rem;
 }
 
 .modal-form {
