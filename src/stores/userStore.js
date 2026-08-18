@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { API_BASE_URL } from '@/config/api'
+import { API_BASE_URL } from '@/config/api.js'
 import axios from 'axios'
 
 export const useUserStore = defineStore('user', () => {
