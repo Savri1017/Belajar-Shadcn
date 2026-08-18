@@ -111,12 +111,10 @@ async function hapusData(id) {
               </Button>
             </div>
 
-            <!-- Indikator Loading saat mengambil data dari API -->
             <div v-if="userStore.isLoading" class="loading-state">
               Sedang memuat data dari database...
             </div>
 
-            <!-- Tabel Data dari Pinia Store -->
             <Table v-else>
               <TableHeader>
                 <TableRow>
@@ -150,7 +148,6 @@ async function hapusData(id) {
           </div>
         </div>
 
-        <!-- Modal Dialog Form -->
         <Dialog :open="isModalOpen" @update:open="isModalOpen = $event">
           <DialogContent class="modal-box">
             <DialogHeader>

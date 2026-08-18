@@ -5,8 +5,7 @@ import axios from 'axios'
 export const useUserStore = defineStore('user', () => {
   const dataPengguna = ref([])
   const isLoading = ref(false)
-
-  // URL Endpoint API dari Laravel Anda
+  
   const API_URL = 'http://localhost:8000/api/penggunas'
 
   // 1. GET ALL
@@ -26,7 +25,7 @@ export const useUserStore = defineStore('user', () => {
   async function tambahPengguna(payload) {
     try {
       await axios.post(API_URL, payload)
-      await fetchPengguna() // Refresh data otomatis setelah simpan
+      await fetchPengguna()
     } catch (error) {
       console.error('Gagal tambah data:', error)
     }
@@ -36,7 +35,7 @@ export const useUserStore = defineStore('user', () => {
   async function updatePengguna(id, payload) {
     try {
       await axios.put(`${API_URL}/${id}`, payload)
-      await fetchPengguna() // Refresh data otomatis setelah update
+      await fetchPengguna()
     } catch (error) {
       console.error('Gagal update data:', error)
     }
@@ -46,7 +45,7 @@ export const useUserStore = defineStore('user', () => {
   async function hapusPengguna(id) {
     try {
       await axios.delete(`${API_URL}/${id}`)
-      await fetchPengguna() // Refresh data otomatis setelah hapus
+      await fetchPengguna()
     } catch (error) {
       console.error('Gagal hapus data:', error)
     }
