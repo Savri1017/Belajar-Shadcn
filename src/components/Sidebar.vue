@@ -1,6 +1,13 @@
 <script setup>
+import { ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import { LayoutDashboard, Folder, Settings, User } from 'lucide-vue-next'
+
+const menuAktif = ref('Dashboard')
+
+function klikMenu(menu) {
+  menuAktif.value = menu
+}
 </script>
 
 <template>
@@ -10,24 +17,24 @@ import { LayoutDashboard, Folder, Settings, User } from 'lucide-vue-next'
     </div>
 
     <nav class="sidebar-nav">
-      <Button variant="ghost" class="sidebar-btn">
-        <LayoutDashboard class="icon" />
+      <Button variant="ghost" class="sidebar-btn" @click="klikMenu('Dashboard')">
+        <LayoutD ashboard class="icon" />
         Dashboard
       </Button>
 
-      <Button variant="ghost" class="sidebar-btn">
+      <Button variant="ghost" class="sidebar-btn" @click="klikMenu('Proyek')">
         <Folder class="icon" />
         Proyek
       </Button>
 
-      <Button variant="ghost" class="sidebar-btn">
+      <Button variant="ghost" class="sidebar-btn" @click="klikMenu('Profil')">
         <User class="icon" />
         Profil
       </Button>
     </nav>
 
     <div class="sidebar-footer">
-      <Button class="sidebar-btn">
+      <Button class="sidebar-btn" @click="klikMenu('Pengaturan')">
         <Settings class="icon" />
         Pengaturan
       </Button>
@@ -43,7 +50,7 @@ import { LayoutDashboard, Folder, Settings, User } from 'lucide-vue-next'
   border-right: 1px solid #e5e7eb;
   display: flex;
   flex-direction: column;
-  padding: 36px;
+  padding: 36px;  
 }
 
 .sidebar-title {
