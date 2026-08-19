@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { Button } from '@/components/ui/button'
 import { useUserStore } from '@/stores/userStore'
 
@@ -31,6 +31,21 @@ onMounted(() => {
   if (userStore.fetchPengguna) {
     userStore.fetchPengguna()
   }
+})
+
+// Urutkan data supaya baris dengan peran "Admin" selalu tampil
+// di atas baris dengan peran "User". Pakai computed (bukan mengubah
+// userStore.dataPengguna langsung) supaya data asli dari backend tetap
+// utuh, dan urutan ini otomatis kehitung ulang tiap kali data berubah
+// (tambah, edit, hapus, atau refetch).
+const dataPenggunaTerurut = computed(() => {
+  return [...userStore.dataPengguna].sort((a, b) => {
+    const isAdminA = a.peran === 'Admin'
+    const isAdminB = b.peran === 'Admin'
+
+    if (isAdminA === isAdminB) return 0   // sama-sama Admin / sama-sama User -> urutan asli dipertahankan
+    return isAdminA ? -1 : 1              // Admin (-1) selalu dianggap "lebih kecil" -> naik ke atas
+  })
 })
 
 function bukaModalTambah() {
@@ -107,17 +122,22 @@ async function hapusData(id) {
               <TableHead>Nama</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Peran</TableHead>
+              <TableHead>Aksi</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             <TableRow
-              v-for="(item, index) in userStore.dataPengguna"
+              v-for="(item, index) in dataPenggunaTerurut"
               :key="item.id"
             >
               <TableCell>{{ index + 1 }}</TableCell>
               <TableCell>{{ item.nama }}</TableCell>
               <TableCell>{{ item.email }}</TableCell>
-              <TableCell>{{ item.peran }}</TableCell>
+              <TableCell>
+                <span class="peran-badge" :class="item.peran === 'Admin' ? 'peran-admin' : 'peran-user'">
+                  {{ item.peran }}
+                </span>
+              </TableCell>
               <TableCell class="action-buttons">
                 <Button variant="outline" size="sm" @click="editData(item)" class="edit-buttons">
                   Edit
@@ -251,6 +271,24 @@ async function hapusData(id) {
 
 .input-field:focus {
   border-color: #2563eb;
+}
+
+.peran-badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+
+.peran-admin {
+  background-color: #ede9fe;
+  color: #6d28d9;
+}
+
+.peran-user {
+  background-color: #f3f4f6;
+  color: #4b5563;
 }
 
 .edit-buttons {
