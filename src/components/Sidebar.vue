@@ -1,12 +1,21 @@
 <script setup>
-import { ref } from 'vue'
+import { RouterLink, useRoute } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { LayoutDashboard, Folder, Settings, User } from 'lucide-vue-next'
 
-const menuAktif = ref('Dashboard')
+const route = useRoute()
 
-function klikMenu(menu) {
-  menuAktif.value = menu
+// Daftar menu utama sidebar. Tambahkan item baru di sini untuk membuka
+// halaman baru — cukup buat komponen di src/views lalu daftarkan
+// route-nya di src/router/index.js.
+const menuUtama = [
+  { nama: 'Dashboard', path: '/', icon: LayoutDashboard },
+  { nama: 'Proyek', path: '/proyek', icon: Folder },
+  { nama: 'Profil', path: '/profil', icon: User },
+]
+
+function isMenuAktif(path) {
+  return route.path === path
 }
 </script>
 
@@ -17,26 +26,31 @@ function klikMenu(menu) {
     </div>
 
     <nav class="sidebar-nav">
-      <Button variant="ghost" class="sidebar-btn" @click="klikMenu('Dashboard')">
-        <LayoutD ashboard class="icon" />
-        Dashboard
-      </Button>
-
-      <Button variant="ghost" class="sidebar-btn" @click="klikMenu('Proyek')">
-        <Folder class="icon" />
-        Proyek
-      </Button>
-
-      <Button variant="ghost" class="sidebar-btn" @click="klikMenu('Profil')">
-        <User class="icon" />
-        Profil
+      <Button
+        v-for="menu in menuUtama"
+        :key="menu.path"
+        as-child
+        variant="ghost"
+        class="sidebar-btn"
+        :class="{ 'sidebar-btn-active': isMenuAktif(menu.path) }"
+      >
+        <RouterLink :to="menu.path">
+          <component :is="menu.icon" class="icon" />
+          {{ menu.nama }}
+        </RouterLink>
       </Button>
     </nav>
 
     <div class="sidebar-footer">
-      <Button class="sidebar-btn" @click="klikMenu('Pengaturan')">
-        <Settings class="icon" />
-        Pengaturan
+      <Button
+        as-child
+        class="sidebar-btn"
+        :class="{ 'sidebar-btn-active': isMenuAktif('/pengaturan') }"
+      >
+        <RouterLink to="/pengaturan">
+          <Settings class="icon" />
+          Pengaturan
+        </RouterLink>
       </Button>
     </div>
   </aside>
@@ -50,7 +64,9 @@ function klikMenu(menu) {
   border-right: 1px solid #e5e7eb;
   display: flex;
   flex-direction: column;
-  padding: 36px;  
+  padding: 36px;
+  position: sticky;
+  top: 0;
 }
 
 .sidebar-title {
@@ -79,6 +95,12 @@ function klikMenu(menu) {
   justify-content: flex-start;
   align-items: center;
   gap: 12px;
+}
+
+.sidebar-btn-active {
+  background-color: #eef2ff;
+  color: #4338ca;
+  font-weight: 600;
 }
 
 .icon {
