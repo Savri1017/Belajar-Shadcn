@@ -1,7 +1,9 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { useUserStore } from '@/stores/userStore'
+import { Search, Users, ShieldCheck, User } from 'lucide-vue-next'
 
 import {
   Table,
@@ -33,13 +35,45 @@ onMounted(() => {
   }
 })
 
+// ==== STATISTIK RINGKASAN (kotak-kotak di atas tabel) ====
+// Selalu dihitung dari SELURUH data (bukan hasil pencarian), supaya
+// angka totalnya tidak berubah-ubah cuma karena lagi ngetik di search bar.
+const totalPengguna = computed(() => userStore.dataPengguna.length)
+const totalAdmin = computed(
+  () => userStore.dataPengguna.filter((item) => item.peran === 'Admin').length
+)
+const totalUser = computed(
+  () => userStore.dataPengguna.filter((item) => item.peran !== 'Admin').length
+)
+
+// ==== SEARCH BAR ====
+const searchQuery = ref('')
+
+// Menyaring data berdasarkan kata kunci yang diketik di search bar.
+// Dicocokkan ke ID, Nama, Email, dan Peran (huruf besar/kecil diabaikan).
+// Kalau search bar kosong, semua data tetap tampil (tidak difilter).
+const dataPenggunaTersaring = computed(() => {
+  const kataKunci = searchQuery.value.trim().toLowerCase()
+  if (!kataKunci) return userStore.dataPengguna
+
+  return userStore.dataPengguna.filter((item) => {
+    return (
+      String(item.id).includes(kataKunci) ||
+      (item.nama ?? '').toLowerCase().includes(kataKunci) ||
+      (item.email ?? '').toLowerCase().includes(kataKunci) ||
+      (item.peran ?? '').toLowerCase().includes(kataKunci)
+    )
+  })
+})
+
+// Hasil pencarian di atas, lalu diurutkan lagi: Admin tetap di atas User.
 const dataPenggunaTerurut = computed(() => {
-  return [...userStore.dataPengguna].sort((a, b) => {
+  return [...dataPenggunaTersaring.value].sort((a, b) => {
     const isAdminA = a.peran === 'Admin'
     const isAdminB = b.peran === 'Admin'
 
-    if (isAdminA === isAdminB) return 0   
-    return isAdminA ? -1 : 1              
+    if (isAdminA === isAdminB) return 0
+    return isAdminA ? -1 : 1
   })
 })
 
@@ -97,6 +131,40 @@ async function hapusData(id) {
   <div class="dashboard-page">
     <h2>Dashboard</h2>
 
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div>
+          <p class="stat-label">Total Data</p>
+          <p class="stat-value">{{ userStore.isLoading ? '-' : totalPengguna }}</p>        
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div>
+          <p class="stat-label"> Total Admin</p>
+          <p class="stat-value">{{ userStore.isLoading ? '-' : totalAdmin }}</p>         
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div>
+          <p class="stat-label"> Total User</p>
+          <p class="stat-value">{{ userStore.isLoading ? '-' : totalUser }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search bar -->
+    <div class="search-card">
+      <Search class="search-icon" />
+      <Input
+        v-model="searchQuery"
+        type="text"
+        placeholder="Cari berdasarkan nama, email, ID, atau peran..."
+        class="pl-9"
+      />
+    </div>
+
     <div class="content-grid">
       <div class="table-card">
         <div class="table-header-box">
@@ -110,6 +178,10 @@ async function hapusData(id) {
           Sedang memuat data dari database...
         </div>
 
+        <div v-else-if="dataPenggunaTerurut.length === 0" class="loading-state">
+          Tidak ada data yang cocok dengan pencarian "{{ searchQuery }}".
+        </div>
+
         <Table v-else>
           <TableHeader>
             <TableRow>
@@ -117,6 +189,7 @@ async function hapusData(id) {
               <TableHead>Nama</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Peran</TableHead>
+              <TableHead>Aksi</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -188,6 +261,55 @@ async function hapusData(id) {
   font-size: 1.5rem;
   font-weight: bold;
   margin-bottom: 20px;
+}
+
+/* Kotak-kotak statistik */
+.stats-grid {
+  display: flex;
+  gap: 30px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background-color: #ffffff;
+  box-shadow: -3px 0px 0px #eef600;
+  border: 3px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 15px 60px 40px 15px;
+}
+
+.stat-value {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.2;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: rgb(128, 121, 121);
+}
+
+/* Search bar — komponen <Input> shadcn sudah punya border & bg sendiri,
+   jadi wrapper ini transparan, cuma buat naruh icon Search di dalam input */
+.search-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  max-width: 420px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  width: 16px;
+  height: 16px;
+  color: #9ca3af;
+  pointer-events: none;
 }
 
 .content-grid {
