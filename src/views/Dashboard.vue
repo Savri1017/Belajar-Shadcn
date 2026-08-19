@@ -275,21 +275,22 @@ async function hapusData(id) {
   align-items: center;
   gap: 14px;
   background-color: #ffffff;
-  box-shadow: -3px 0px 0px #eef600;
+  box-shadow: -3px 0px 0px #1d00f6bc;
   border: 3px solid #e5e7eb;
   border-radius: 8px;
-  padding: 15px 60px 40px 15px;
+  padding: 15px 60px 15px 15px;
 }
 
 .stat-value {
   font-size: 1.375rem;
   font-weight: 700;
   color: #111827;
-  line-height: 1.2;
+  line-height: 2.1;
 }
 
 .stat-label {
-  font-size: 13px;
+  font-size: 15px;
+  font-weight: bold;
   color: rgb(128, 121, 121);
 }
 
