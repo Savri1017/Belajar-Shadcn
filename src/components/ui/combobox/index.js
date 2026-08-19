@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 export { default as Combobox } from "./Combobox.vue";
 export { default as ComboboxAnchor } from "./ComboboxAnchor.vue";
 export { default as ComboboxEmpty } from "./ComboboxEmpty.vue";
@@ -11,3 +12,6 @@ export { default as ComboboxTrigger } from "./ComboboxTrigger.vue";
 export { default as ComboboxViewport } from "./ComboboxViewport.vue";
 
 export { ComboboxCancel } from "reka-ui";
+=======
+export { default as Combobox } from './Combobox.vue'
+>>>>>>> 7c393362af1ddb6846511d737bdca1e001e25aba
