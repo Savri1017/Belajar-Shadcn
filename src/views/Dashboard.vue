@@ -33,18 +33,13 @@ onMounted(() => {
   }
 })
 
-// Urutkan data supaya baris dengan peran "Admin" selalu tampil
-// di atas baris dengan peran "User". Pakai computed (bukan mengubah
-// userStore.dataPengguna langsung) supaya data asli dari backend tetap
-// utuh, dan urutan ini otomatis kehitung ulang tiap kali data berubah
-// (tambah, edit, hapus, atau refetch).
 const dataPenggunaTerurut = computed(() => {
   return [...userStore.dataPengguna].sort((a, b) => {
     const isAdminA = a.peran === 'Admin'
     const isAdminB = b.peran === 'Admin'
 
-    if (isAdminA === isAdminB) return 0   // sama-sama Admin / sama-sama User -> urutan asli dipertahankan
-    return isAdminA ? -1 : 1              // Admin (-1) selalu dianggap "lebih kecil" -> naik ke atas
+    if (isAdminA === isAdminB) return 0   
+    return isAdminA ? -1 : 1              
   })
 })
 
@@ -122,7 +117,6 @@ async function hapusData(id) {
               <TableHead>Nama</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Peran</TableHead>
-              <TableHead>Aksi</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
