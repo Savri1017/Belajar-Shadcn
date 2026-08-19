@@ -180,7 +180,7 @@ async function konfirmasiHapus() {
 
     <div class="search-card">
       <Search class="search-icon" />
-      <Input v-model="searchQuery" type="text" placeholder="Cari berdasarkan nama, email, ID, atau peran..." class="pl-9" />
+      <Input v-model="searchQuery" type="text" placeholder="Cari berdasarkan nama, email, atau ID..." class="pl-9" />
     </div>
 
     <div class="content-grid">
@@ -275,7 +275,7 @@ async function konfirmasiHapus() {
 .stat-card {
   display: flex;
   align-items: center;
-  gap: 50px;
+  gap: 40px;
   background-color: #fff;
   box-shadow: -3px 0 0 #1d00f6bc;
   border: 1px solid #e5e7eb;
@@ -312,7 +312,7 @@ async function konfirmasiHapus() {
   font-weight: 700;
   color: #111827;
   line-height: 2.1;
-  text-align: center;
+  margin-left: 8px;
 }
 
 .stat-label {
