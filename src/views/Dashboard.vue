@@ -195,7 +195,12 @@ async function konfirmasiHapus() {
 
         <Table v-else>
           <TableHeader>
-            <TableRow><TableHead>No</TableHead><TableHead>Nama</TableHead><TableHead>Email</TableHead><TableHead>Peran</TableHead><TableHead>Aksi</TableHead></TableRow>
+            <TableRow>
+              <TableHead>No</TableHead>
+              <TableHead>Nama</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Peran</TableHead>
+            </TableRow>
           </TableHeader>
           <TableBody>
             <TableRow v-for="(item, index) in dataPenggunaTerurut" :key="item.id">
@@ -255,40 +260,213 @@ async function konfirmasiHapus() {
 </template>
 
 <style scoped>
-.dashboard-page h2 { font-size: 1.5rem; font-weight: bold; margin-bottom: 20px; }
-.stats-grid { display: flex; gap: 30px; margin-bottom: 20px; }
-.stat-card { display: flex; align-items: center; gap: 50px; background-color: #fff; box-shadow: -3px 0 0 #1d00f6bc; border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px 30px 15px 15px; }
-.stat-icon { width: 50px; height: 50px; padding: 11px; border-radius: 10px; background-color: #4438ca72; color: #4338ca; }
-.stat-admin { background-color: #ede9fe; color: #6d28d9; }
-.stat-manager { background-color: #fef3c7; color: #b45309; }
-.stat-staff { background-color: #f3f4f6; color: #4b5563; }
-.stat-value { font-size: 1.375rem; font-weight: 700; color: #111827; line-height: 2.1; }
-.stat-label { font-size: 15px; font-weight: bold; color: rgb(128, 121, 121); }
-.search-card { position: relative; display: flex; align-items: center; margin-bottom: 20px; max-width: 420px; }
-.search-icon { position: absolute; left: 12px; width: 16px; height: 16px; color: #9ca3af; pointer-events: none; z-index: 1; }
-.content-grid { display: flex; align-items: flex-start; gap: 24px; }
-.table-card { flex: 1; background-color: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; }
-.table-header-box { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; gap: 40px; }
-.table-header-box h3 { font-size: 1rem; font-weight: 600; }
-.table-description { color: #6b7280; font-size: 0.8rem; margin-top: 3px; }
-.action-button-modal { background-color: #0400f6; color: white; }
-.action-button-modal:hover { background-color: #2624a7; }
-.action-buttons { display: flex; gap: 8px; }
-.button-icon { width: 15px; height: 15px; }
-.loading-state { display: flex; align-items: center; gap: 8px; padding: 16px; color: #6b7280; font-size: 0.875rem; }
-.loading-icon, .spinner { animation: spin 0.8s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-.modal-form { display: flex; flex-direction: column; gap: 16px; padding: 8px 0; }
-.form-group { display: flex; flex-direction: column; gap: 6px; }
-.form-group label { font-size: 0.875rem; font-weight: 500; color: #374151; }
-.form-error { color: #dc2626; font-size: 0.875rem; }
-.peran-badge { display: inline-block; font-size: 0.75rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; }
-.peran-admin { background-color: #ede9fe; color: #6d28d9; }
-.peran-manager { background-color: #fef3c7; color: #b45309; }
-.peran-staff { background-color: #f3f4f6; color: #4b5563; }
-.edit-buttons { background-color: rgb(246, 246, 28); }
-.edit-buttons:hover { background-color: rgb(188, 188, 22); }
-.delete-buttons:hover { background-color: rgb(204, 21, 21); }
-@media (max-width: 1100px) { .stats-grid { flex-wrap: wrap; } }
-@media (max-width: 700px) { .stats-grid { flex-direction: column; } .table-header-box { align-items: flex-start; flex-direction: column; gap: 12px; } }
+.dashboard-page h2 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.stats-grid {
+  display: flex;
+  gap: 30px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 50px;
+  background-color: #fff;
+  box-shadow: -3px 0 0 #1d00f6bc;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 20px 30px 15px 15px;
+}
+
+.stat-icon {
+  width: 50px;
+  height: 50px;
+  padding: 11px;
+  border-radius: 10px;
+  background-color: #4438ca72;
+  color: #4338ca;
+}
+
+.stat-admin {
+  background-color: #7cd87986;
+  color: #0e8b48;
+}
+
+.stat-manager {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.stat-staff {
+  background-color: #f3f4f6;
+  color: #4b5563;
+}
+
+.stat-value {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: #111827;
+  line-height: 2.1;
+  text-align: center;
+}
+
+.stat-label {
+  font-size: 15px;
+  font-weight: bold;
+  color: rgb(128, 121, 121);
+}
+
+.search-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  max-width: 420px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  width: 16px;
+  height: 16px;
+  color: #9ca3af;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.content-grid {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.table-card {
+  flex: 1;
+  background-color: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.table-header-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 40px;
+}
+
+.table-header-box h3 {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.table-description {
+  color: #6b7280;
+  font-size: 0.8rem;
+  margin-top: 3px;
+}
+
+.action-button-modal {
+  background-color: #0400f6;
+  color: white;
+}
+
+.action-button-modal:hover {
+  background-color: #2624a7;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.button-icon {
+  width: 15px;
+  height: 15px;
+}
+
+.loading-state {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.loading-icon, 
+.spinner {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.form-error {
+  color: #dc2626;
+  font-size: 0.875rem;
+}
+
+.peran-badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+
+.peran-admin {
+  background-color: #7cd87986;
+  color: #0e8b48;
+}
+
+.peran-manager {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.peran-staff {
+  background-color: #f3f4f6;
+  color: #4b5563;
+}
+
+.edit-buttons {
+  background-color: rgb(246, 246, 28);
+}
+
+.edit-buttons:hover {
+  background-color: rgb(188, 188, 22);
+}
+
+.delete-buttons:hover {
+  background-color: rgb(204, 21, 21);
+}
 </style>

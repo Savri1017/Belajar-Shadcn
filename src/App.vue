@@ -32,5 +32,6 @@ import Navbar from '@/components/Navbar.vue'
 
 .content-area {
   padding: 24px;
+  margin-left: 20px;
 }
 </style>
