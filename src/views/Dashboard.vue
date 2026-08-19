@@ -1,10 +1,16 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useUserStore } from '@/stores/userStore'
-import { Search, Users, ShieldCheck, User } from 'lucide-vue-next'
-
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import {
   Table,
   TableBody,
@@ -13,47 +19,47 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog'
+  Loader2,
+  Pencil,
+  Search,
+  ShieldCheck,
+  Trash2,
+  User,
+  Users,
+} from 'lucide-vue-next'
 
 const userStore = useUserStore()
+
 const isModalOpen = ref(false)
+const isSubmitting = ref(false)
+const isDeleteModalOpen = ref(false)
+const isDeleting = ref(false)
+
+const penggunaYangDihapus = ref(null)
 const namaInput = ref('')
 const emailInput = ref('')
 const peranInput = ref('User')
 const idEdit = ref(null)
-
-onMounted(() => {
-  if (userStore.fetchPengguna) {
-    userStore.fetchPengguna()
-  }
-})
-
-// ==== STATISTIK RINGKASAN (kotak-kotak di atas tabel) ====
-// Selalu dihitung dari SELURUH data (bukan hasil pencarian), supaya
-// angka totalnya tidak berubah-ubah cuma karena lagi ngetik di search bar.
-const totalPengguna = computed(() => userStore.dataPengguna.length)
-const totalAdmin = computed(
-  () => userStore.dataPengguna.filter((item) => item.peran === 'Admin').length
-)
-const totalUser = computed(
-  () => userStore.dataPengguna.filter((item) => item.peran !== 'Admin').length
-)
-
-// ==== SEARCH BAR ====
+const errorMessage = ref('')
+const deleteErrorMessage = ref('')
 const searchQuery = ref('')
 
-// Menyaring data berdasarkan kata kunci yang diketik di search bar.
-// Dicocokkan ke ID, Nama, Email, dan Peran (huruf besar/kecil diabaikan).
-// Kalau search bar kosong, semua data tetap tampil (tidak difilter).
+onMounted(() => {
+  userStore.fetchPengguna()
+})
+
+const totalPengguna = computed(() => userStore.dataPengguna.length)
+const totalAdmin = computed(() =>
+  userStore.dataPengguna.filter((item) => item.peran === 'Admin').length
+)
+const totalUser = computed(() =>
+  userStore.dataPengguna.filter((item) => item.peran !== 'Admin').length
+)
+
 const dataPenggunaTersaring = computed(() => {
   const kataKunci = searchQuery.value.trim().toLowerCase()
+
   if (!kataKunci) return userStore.dataPengguna
 
   return userStore.dataPengguna.filter((item) => {
@@ -66,7 +72,6 @@ const dataPenggunaTersaring = computed(() => {
   })
 })
 
-// Hasil pencarian di atas, lalu diurutkan lagi: Admin tetap di atas User.
 const dataPenggunaTerurut = computed(() => {
   return [...dataPenggunaTersaring.value].sort((a, b) => {
     const isAdminA = a.peran === 'Admin'
@@ -78,51 +83,101 @@ const dataPenggunaTerurut = computed(() => {
 })
 
 function bukaModalTambah() {
+  if (isSubmitting.value || isDeleting.value) return
+
   idEdit.value = null
   namaInput.value = ''
   emailInput.value = ''
   peranInput.value = 'User'
+  errorMessage.value = ''
   isModalOpen.value = true
 }
 
 function editData(item) {
+  if (isSubmitting.value || isDeleting.value) return
+
   idEdit.value = item.id
   namaInput.value = item.nama
   emailInput.value = item.email
   peranInput.value = item.peran
+  errorMessage.value = ''
   isModalOpen.value = true
 }
 
+function tutupModalForm() {
+  if (!isSubmitting.value) isModalOpen.value = false
+}
+
 async function simpanData() {
-  if (!namaInput.value || !emailInput.value) {
-    alert('Nama dan Email wajib diisi!')
+  if (isSubmitting.value) return
+
+  errorMessage.value = ''
+
+  if (!namaInput.value.trim() || !emailInput.value.trim()) {
+    errorMessage.value = 'Nama dan Email wajib diisi.'
     return
   }
 
   const payload = {
-    nama: namaInput.value,
-    email: emailInput.value,
+    nama: namaInput.value.trim(),
+    email: emailInput.value.trim(),
     peran: peranInput.value,
   }
 
-  if (idEdit.value !== null) {
-    if (userStore.updatePengguna) {
-      await userStore.updatePengguna(idEdit.value, payload)
-    }
-  } else {
-    if (userStore.tambahPengguna) {
-      await userStore.tambahPengguna(payload)
-    }
-  }
+  isSubmitting.value = true
 
-  isModalOpen.value = false
+  try {
+    const berhasil =
+      idEdit.value !== null
+        ? await userStore.updatePengguna(idEdit.value, payload)
+        : await userStore.tambahPengguna(payload)
+
+    if (!berhasil) {
+      errorMessage.value =
+        idEdit.value !== null
+          ? 'Data gagal diperbarui. Silakan coba lagi.'
+          : 'Data gagal disimpan. Silakan coba lagi.'
+      return
+    }
+
+    isModalOpen.value = false
+  } finally {
+    isSubmitting.value = false
+  }
 }
 
-async function hapusData(id) {
-  if (confirm('Yakin ingin menghapus data ini?')) {
-    if (userStore.hapusPengguna) {
-      await userStore.hapusPengguna(id)
+function bukaModalHapus(item) {
+  if (isDeleting.value || isSubmitting.value) return
+
+  penggunaYangDihapus.value = item
+  deleteErrorMessage.value = ''
+  isDeleteModalOpen.value = true
+}
+
+function tutupModalHapus() {
+  if (!isDeleting.value) isDeleteModalOpen.value = false
+}
+
+async function konfirmasiHapus() {
+  if (isDeleting.value || !penggunaYangDihapus.value) return
+
+  deleteErrorMessage.value = ''
+  isDeleting.value = true
+
+  try {
+    const berhasil = await userStore.hapusPengguna(
+      penggunaYangDihapus.value.id
+    )
+
+    if (!berhasil) {
+      deleteErrorMessage = 'Data gagal dihapus. Silakan coba lagi.'
+      return
     }
+
+    isDeleteModalOpen.value = false
+    penggunaYangDihapus.value = null
+  } finally {
+    isDeleting.value = false
   }
 }
 </script>
@@ -135,26 +190,28 @@ async function hapusData(id) {
       <div class="stat-card">
         <div>
           <p class="stat-label">Total Data</p>
-          <p class="stat-value">{{ userStore.isLoading ? '-' : totalPengguna }}</p>        
+          <p class="stat-value">{{ userStore.isLoading ? '-' : totalPengguna }}</p>
         </div>
+        <Users class="stat-icon" />
       </div>
 
       <div class="stat-card">
         <div>
-          <p class="stat-label"> Total Admin</p>
-          <p class="stat-value">{{ userStore.isLoading ? '-' : totalAdmin }}</p>         
+          <p class="stat-label">Total Admin</p>
+          <p class="stat-value">{{ userStore.isLoading ? '-' : totalAdmin }}</p>
         </div>
+          <ShieldCheck class="stat-icon" />
       </div>
 
       <div class="stat-card">
         <div>
-          <p class="stat-label"> Total User</p>
+          <p class="stat-label">Total User</p>
           <p class="stat-value">{{ userStore.isLoading ? '-' : totalUser }}</p>
         </div>
+        <User class="stat-icon" />
       </div>
     </div>
 
-    <!-- Search bar -->
     <div class="search-card">
       <Search class="search-icon" />
       <Input
@@ -168,14 +225,23 @@ async function hapusData(id) {
     <div class="content-grid">
       <div class="table-card">
         <div class="table-header-box">
-          <h3>Daftar Pengguna</h3>
-          <Button class="action-button-modal" variant="outline" @click="bukaModalTambah">
+          <div>
+            <h3>Daftar Pengguna</h3>
+            <p class="table-description">Kelola data pengguna dari sini.</p>
+          </div>
+
+          <Button
+            class="action-button-modal"
+            :disabled="isSubmitting || isDeleting"
+            @click="bukaModalTambah"
+          >
             Tambah Pengguna
           </Button>
         </div>
 
         <div v-if="userStore.isLoading" class="loading-state">
-          Sedang memuat data dari database...
+          <Loader2 class="loading-icon" />
+          <span>Sedang memuat data dari database...</span>
         </div>
 
         <div v-else-if="dataPenggunaTerurut.length === 0" class="loading-state">
@@ -189,9 +255,9 @@ async function hapusData(id) {
               <TableHead>Nama</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Peran</TableHead>
-              <TableHead>Aksi</TableHead>
             </TableRow>
           </TableHeader>
+
           <TableBody>
             <TableRow
               v-for="(item, index) in dataPenggunaTerurut"
@@ -201,15 +267,34 @@ async function hapusData(id) {
               <TableCell>{{ item.nama }}</TableCell>
               <TableCell>{{ item.email }}</TableCell>
               <TableCell>
-                <span class="peran-badge" :class="item.peran === 'Admin' ? 'peran-admin' : 'peran-user'">
+                <span
+                  class="peran-badge"
+                  :class="item.peran === 'Admin' ? 'peran-admin' : 'peran-user'"
+                >
                   {{ item.peran }}
                 </span>
               </TableCell>
+
               <TableCell class="action-buttons">
-                <Button variant="outline" size="sm" @click="editData(item)" class="edit-buttons">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  class="edit-buttons"
+                  :disabled="isSubmitting || isDeleting"
+                  @click="editData(item)"
+                >
+                  <Pencil class="button-icon" />
                   Edit
                 </Button>
-                <Button variant="destructive" size="sm" @click="hapusData(item.id)" class="delete-buttons">
+
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  class="delete-buttons"
+                  :disabled="isSubmitting || isDeleting"
+                  @click="bukaModalHapus(item)"
+                >
+                  <Trash2 class="button-icon" />
                   Hapus
                 </Button>
               </TableCell>
@@ -219,36 +304,122 @@ async function hapusData(id) {
       </div>
     </div>
 
+    <!-- Modal Tambah / Edit -->
     <Dialog :open="isModalOpen" @update:open="isModalOpen = $event">
-      <DialogContent class="modal-box">
+      <DialogContent :show-close-button="!isSubmitting">
         <DialogHeader>
-          <DialogTitle>{{ idEdit ? 'Edit Pengguna' : 'Tambah Pengguna Baru' }}</DialogTitle>
+          <DialogTitle>
+            {{ idEdit !== null ? 'Edit Pengguna' : 'Tambah Pengguna Baru' }}
+          </DialogTitle>
+          <DialogDescription>
+            {{
+              idEdit !== null
+                ? 'Perbarui informasi pengguna.'
+                : 'Isi data pengguna baru di bawah ini.'
+            }}
+          </DialogDescription>
         </DialogHeader>
 
-        <div class="modal-form">
+        <form class="modal-form" @submit.prevent="simpanData">
           <div class="form-group">
-            <label>Nama Lengkap</label>
-            <input v-model="namaInput" type="text" placeholder="Masukkan nama..." class="input-field" />
+            <label for="nama">Nama Lengkap</label>
+            <Input
+              id="nama"
+              v-model="namaInput"
+              :disabled="isSubmitting"
+              placeholder="Masukkan nama..."
+            />
           </div>
 
           <div class="form-group">
-            <label>Email</label>
-            <input v-model="emailInput" type="email" placeholder="Masukkan email..." class="input-field" />
+            <label for="email">Email</label>
+            <Input
+              id="email"
+              v-model="emailInput"
+              type="email"
+              :disabled="isSubmitting"
+              placeholder="Masukkan email..."
+            />
           </div>
 
           <div class="form-group">
-            <label>Peran</label>
-            <select v-model="peranInput" class="input-field">
+            <label for="peran">Peran</label>
+            <select
+              id="peran"
+              v-model="peranInput"
+              class="input-field"
+              :disabled="isSubmitting"
+            >
               <option value="User">User</option>
               <option value="Admin">Admin</option>
             </select>
           </div>
-        </div>
+
+          <p v-if="errorMessage" class="form-error">
+            {{ errorMessage }}
+          </p>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              :disabled="isSubmitting"
+              @click="tutupModalForm"
+            >
+              Batal
+            </Button>
+
+            <Button type="submit" :disabled="isSubmitting">
+              <Loader2 v-if="isSubmitting" class="button-icon spinner" />
+              {{
+                isSubmitting
+                  ? idEdit !== null
+                    ? 'Menyimpan perubahan...'
+                    : 'Menyimpan data...'
+                  : idEdit !== null
+                    ? 'Update'
+                    : 'Simpan'
+              }}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+
+    <!-- Modal Konfirmasi Hapus -->
+    <Dialog
+      :open="isDeleteModalOpen"
+      @update:open="isDeleteModalOpen = $event"
+    >
+      <DialogContent :show-close-button="!isDeleting">
+        <DialogHeader>
+          <DialogTitle>Hapus Pengguna?</DialogTitle>
+          <DialogDescription>
+            Data <strong>{{ penggunaYangDihapus?.nama }}</strong> akan dihapus
+            secara permanen dan tidak dapat dikembalikan.
+          </DialogDescription>
+        </DialogHeader>
+
+        <p v-if="deleteErrorMessage" class="form-error">
+          {{ deleteErrorMessage }}
+        </p>
 
         <DialogFooter>
-          <Button variant="outline" @click="isModalOpen = false">Batal</Button>
-          <Button @click="simpanData">
-            {{ idEdit ? 'Update' : 'Simpan' }}
+          <Button
+            variant="outline"
+            :disabled="isDeleting"
+            @click="tutupModalHapus"
+          >
+            Batal
+          </Button>
+
+          <Button
+            variant="destructive"
+            :disabled="isDeleting"
+            @click="konfirmasiHapus"
+          >
+            <Loader2 v-if="isDeleting" class="button-icon spinner" />
+            {{ isDeleting ? 'Menghapus...' : 'Ya, Hapus Data' }}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -263,7 +434,6 @@ async function hapusData(id) {
   margin-bottom: 20px;
 }
 
-/* Kotak-kotak statistik */
 .stats-grid {
   display: flex;
   gap: 30px;
@@ -273,12 +443,21 @@ async function hapusData(id) {
 .stat-card {
   display: flex;
   align-items: center;
-  gap: 14px;
-  background-color: #ffffff;
-  box-shadow: -3px 0px 0px #1d00f6bc;
-  border: 3px solid #e5e7eb;
+  gap: 50px;
+  background-color: #fff;
+  box-shadow: -3px 0 0 #1d00f6bc;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
-  padding: 15px 60px 15px 15px;
+  padding: 15px 30px 15px 15px;
+}
+
+.stat-icon {
+  width: 50px;
+  height: 50px;
+  padding: 11px;
+  border-radius: 10px;
+  background-color: #4438ca72;
+  color: #4338ca;
 }
 
 .stat-value {
@@ -294,8 +473,6 @@ async function hapusData(id) {
   color: rgb(128, 121, 121);
 }
 
-/* Search bar — komponen <Input> shadcn sudah punya border & bg sendiri,
-   jadi wrapper ini transparan, cuma buat naruh icon Search di dalam input */
 .search-card {
   position: relative;
   display: flex;
@@ -311,6 +488,7 @@ async function hapusData(id) {
   height: 16px;
   color: #9ca3af;
   pointer-events: none;
+  z-index: 1;
 }
 
 .content-grid {
@@ -321,7 +499,7 @@ async function hapusData(id) {
 
 .table-card {
   flex: 1;
-  background-color: #ffffff;
+  background-color: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   padding: 16px;
@@ -331,12 +509,18 @@ async function hapusData(id) {
   display: flex;
   align-items: center;
   margin-bottom: 20px;
-  gap: 20px;
+  gap: 40px;
 }
 
 .table-header-box h3 {
   font-size: 1rem;
   font-weight: 600;
+}
+
+.table-description {
+  color: #6b7280;
+  font-size: 0.8rem;
+  margin-top: 3px;
 }
 
 .action-button-modal {
@@ -353,17 +537,36 @@ async function hapusData(id) {
   gap: 8px;
 }
 
+.button-icon {
+  width: 15px;
+  height: 15px;
+}
+
 .loading-state {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 16px;
   color: #6b7280;
   font-size: 0.875rem;
+}
+
+.loading-icon,
+.spinner {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .modal-form {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 16px 0;
+  padding: 8px 0;
 }
 
 .form-group {
@@ -379,15 +582,27 @@ async function hapusData(id) {
 }
 
 .input-field {
+  width: 100%;
   padding: 8px 12px;
   border: 1px solid #e5e7eb;
   border-radius: 6px;
   font-size: 0.875rem;
   outline: none;
+  background: white;
 }
 
 .input-field:focus {
   border-color: #2563eb;
+}
+
+.input-field:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.form-error {
+  color: #dc2626;
+  font-size: 0.875rem;
 }
 
 .peran-badge {
@@ -419,4 +634,5 @@ async function hapusData(id) {
 .delete-buttons:hover {
   background-color: rgb(204, 21, 21);
 }
+
 </style>
