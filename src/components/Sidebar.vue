@@ -57,7 +57,7 @@ function isMenuAktif(path) {
 .sidebar-container {
   width: 256px;
   height: 100vh;
-  background-color: #ffffff;
+  background-color: #ffff;
   border-right: 1px solid #e5e7eb;
   display: flex;
   flex-direction: column;

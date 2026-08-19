@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Combobox } from '@/components/ui/combobox'
 import { Input } from '@/components/ui/input'
 import { useUserStore } from '@/stores/userStore'
+
 import {
   Dialog,
   DialogContent,
@@ -12,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+
 import {
   Table,
   TableBody,
@@ -20,6 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+
 import {
   Briefcase,
   Loader2,
@@ -164,15 +167,15 @@ async function konfirmasiHapus() {
         <div><p class="stat-label">Total Data</p><p class="stat-value">{{ userStore.isLoading ? '-' : totalPengguna }}</p></div>
         <Users class="stat-icon" />
       </div>
-      <div class="stat-card">
+      <div class="stat-card2">
         <div><p class="stat-label">Total Admin</p><p class="stat-value">{{ userStore.isLoading ? '-' : totalAdmin }}</p></div>
         <ShieldCheck class="stat-icon stat-admin" />
       </div>
-      <div class="stat-card">
+      <div class="stat-card3">
         <div><p class="stat-label">Total Manager</p><p class="stat-value">{{ userStore.isLoading ? '-' : totalManager }}</p></div>
         <Briefcase class="stat-icon stat-manager" />
       </div>
-      <div class="stat-card">
+      <div class="stat-card4">
         <div><p class="stat-label">Total Staff</p><p class="stat-value">{{ userStore.isLoading ? '-' : totalStaff }}</p></div>
         <User class="stat-icon stat-staff" />
       </div>
@@ -278,6 +281,39 @@ async function konfirmasiHapus() {
   gap: 40px;
   background-color: #fff;
   box-shadow: -3px 0 0 #1d00f6bc;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 20px 30px 15px 15px;
+}
+
+.stat-card2{
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  background-color: #fff;
+  box-shadow: -3px 0 0 #037905b3;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 20px 30px 15px 15px;
+}
+
+.stat-card3 {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  background-color: #fff;
+  box-shadow: -3px 0 0 #c4c402bc;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 20px 30px 15px 15px;
+}
+
+.stat-card4 {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  background-color: #fff;
+  box-shadow: -3px 0 0 #888698bc;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   padding: 20px 30px 15px 15px;
@@ -444,17 +480,17 @@ async function konfirmasiHapus() {
 }
 
 .peran-admin {
-  background-color: #7cd87986;
+  font-size: 13px;
   color: #0e8b48;
 }
 
 .peran-manager {
-  background-color: #fef3c7;
-  color: #b45309;
+  font-size: 13px;
+  color: #c48509;
 }
 
 .peran-staff {
-  background-color: #f3f4f6;
+  font-size: 13px;
   color: #4b5563;
 }
 
