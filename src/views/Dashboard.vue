@@ -37,7 +37,6 @@ const peranInput = ref('User')
 const idEdit = ref(null)
 const errorMessage = ref('')
 const deleteErrorMessage = ref('')
-
 const searchQuery = ref('')
 
 onMounted(() => {
@@ -45,25 +44,19 @@ onMounted(() => {
 })
 
 const totalPengguna = computed(() => userStore.dataPengguna.length)
-const totalAdmin = computed(
-  () => userStore.dataPengguna.filter((item) => item.peran === 'Admin').length
-)
-const totalUser = computed(
-  () => userStore.dataPengguna.filter((item) => item.peran !== 'Admin').length
-)
+const totalAdmin = computed(() => userStore.dataPengguna.filter((item) => item.peran === 'Admin').length)
+const totalUser = computed(() => userStore.dataPengguna.filter((item) => item.peran !== 'Admin').length)
 
 const dataPenggunaTersaring = computed(() => {
   const kataKunci = searchQuery.value.trim().toLowerCase()
   if (!kataKunci) return userStore.dataPengguna
 
-  return userStore.dataPengguna.filter((item) => {
-    return (
-      String(item.id).includes(kataKunci) ||
-      (item.nama ?? '').toLowerCase().includes(kataKunci) ||
-      (item.email ?? '').toLowerCase().includes(kataKunci) ||
-      (item.peran ?? '').toLowerCase().includes(kataKunci)
-    )
-  })
+  return userStore.dataPengguna.filter((item) => (
+    String(item.id).includes(kataKunci) ||
+    (item.nama ?? '').toLowerCase().includes(kataKunci) ||
+    (item.email ?? '').toLowerCase().includes(kataKunci) ||
+    (item.peran ?? '').toLowerCase().includes(kataKunci)
+  ))
 })
 
 const dataPenggunaTerurut = computed(() => {
@@ -101,7 +94,6 @@ function tutupModalForm() {
 
 async function simpanData() {
   if (isSubmitting.value) return
-
   errorMessage.value = ''
 
   if (!namaInput.value.trim() || !emailInput.value.trim()) {
@@ -180,7 +172,6 @@ async function konfirmasiHapus() {
           <p class="stat-value">{{ userStore.isLoading ? '-' : totalPengguna }}</p>
         </div>
       </div>
-
       <div class="stat-card">
         <ShieldCheck class="stat-icon" />
         <div>
@@ -188,7 +179,6 @@ async function konfirmasiHapus() {
           <p class="stat-value">{{ userStore.isLoading ? '-' : totalAdmin }}</p>
         </div>
       </div>
-
       <div class="stat-card">
         <User class="stat-icon" />
         <div>
@@ -200,12 +190,7 @@ async function konfirmasiHapus() {
 
     <div class="search-card">
       <Search class="search-icon" />
-      <Input
-        v-model="searchQuery"
-        type="text"
-        placeholder="Cari berdasarkan nama, email, ID, atau peran..."
-        class="pl-9"
-      />
+      <Input v-model="searchQuery" type="text" placeholder="Cari berdasarkan nama, email, ID, atau peran..." class="pl-9" />
     </div>
 
     <div class="content-grid">
@@ -215,12 +200,7 @@ async function konfirmasiHapus() {
             <h3>Daftar Pengguna</h3>
             <p class="table-description">Kelola data pengguna dari sini.</p>
           </div>
-
-          <Button
-            class="action-button-modal"
-            :disabled="isSubmitting || isDeleting"
-            @click="bukaModalTambah"
-          >
+          <Button class="action-button-modal" :disabled="isSubmitting || isDeleting" @click="bukaModalTambah">
             Tambah Pengguna
           </Button>
         </div>
@@ -229,7 +209,6 @@ async function konfirmasiHapus() {
           <Loader2 class="loading-icon" />
           Sedang memuat data dari database...
         </div>
-
         <div v-else-if="dataPenggunaTerurut.length === 0" class="loading-state">
           Tidak ada data yang cocok dengan pencarian "{{ searchQuery }}".
         </div>
@@ -250,31 +229,16 @@ async function konfirmasiHapus() {
               <TableCell>{{ item.nama }}</TableCell>
               <TableCell>{{ item.email }}</TableCell>
               <TableCell>
-                <span
-                  class="peran-badge"
-                  :class="item.peran === 'Admin' ? 'peran-admin' : 'peran-user'"
-                >
+                <span class="peran-badge" :class="item.peran === 'Admin' ? 'peran-admin' : 'peran-user'">
                   {{ item.peran }}
                 </span>
               </TableCell>
               <TableCell class="action-buttons">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  class="edit-buttons"
-                  :disabled="isSubmitting || isDeleting"
-                  @click="editData(item)"
-                >
+                <Button variant="outline" size="sm" class="edit-buttons" :disabled="isSubmitting || isDeleting" @click="editData(item)">
                   <Pencil class="button-icon" />
                   Edit
                 </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  class="delete-buttons"
-                  :disabled="isSubmitting || isDeleting"
-                  @click="bukaModalHapus(item)"
-                >
+                <Button variant="destructive" size="sm" class="delete-buttons" :disabled="isSubmitting || isDeleting" @click="bukaModalHapus(item)">
                   <Trash2 class="button-icon" />
                   Hapus
                 </Button>
@@ -285,13 +249,10 @@ async function konfirmasiHapus() {
       </div>
     </div>
 
-    <!-- Modal tambah / edit menggunakan Dialog shadcn -->
     <Dialog :open="isModalOpen" @update:open="isModalOpen = $event">
-      <DialogContent class="modal-box" :show-close="!isSubmitting">
+      <DialogContent class="modal-box" :show-close-button="!isSubmitting">
         <DialogHeader>
-          <DialogTitle>
-            {{ idEdit !== null ? 'Edit Pengguna' : 'Tambah Pengguna Baru' }}
-          </DialogTitle>
+          <DialogTitle>{{ idEdit !== null ? 'Edit Pengguna' : 'Tambah Pengguna Baru' }}</DialogTitle>
           <DialogDescription>
             {{ idEdit !== null ? 'Perbarui informasi pengguna.' : 'Isi data pengguna baru di bawah ini.' }}
           </DialogDescription>
@@ -302,12 +263,10 @@ async function konfirmasiHapus() {
             <label for="nama">Nama Lengkap</label>
             <Input id="nama" v-model="namaInput" :disabled="isSubmitting" placeholder="Masukkan nama..." />
           </div>
-
           <div class="form-group">
             <label for="email">Email</label>
             <Input id="email" v-model="emailInput" type="email" :disabled="isSubmitting" placeholder="Masukkan email..." />
           </div>
-
           <div class="form-group">
             <label for="peran">Peran</label>
             <select id="peran" v-model="peranInput" class="input-field" :disabled="isSubmitting">
@@ -319,9 +278,7 @@ async function konfirmasiHapus() {
           <p v-if="errorMessage" class="form-error">{{ errorMessage }}</p>
 
           <DialogFooter>
-            <Button type="button" variant="outline" :disabled="isSubmitting" @click="tutupModalForm">
-              Batal
-            </Button>
+            <Button type="button" variant="outline" :disabled="isSubmitting" @click="tutupModalForm">Batal</Button>
             <Button type="submit" :disabled="isSubmitting">
               <Loader2 v-if="isSubmitting" class="button-icon spinner" />
               {{ isSubmitting ? (idEdit !== null ? 'Menyimpan perubahan...' : 'Menyimpan data...') : (idEdit !== null ? 'Update' : 'Simpan') }}
@@ -331,24 +288,19 @@ async function konfirmasiHapus() {
       </DialogContent>
     </Dialog>
 
-    <!-- Modal konfirmasi hapus menggunakan Dialog shadcn -->
     <Dialog :open="isDeleteModalOpen" @update:open="isDeleteModalOpen = $event">
-      <DialogContent :show-close="!isDeleting">
+      <DialogContent :show-close-button="!isDeleting">
         <DialogHeader>
           <DialogTitle>Hapus Pengguna?</DialogTitle>
           <DialogDescription>
-            Data
-            <strong>{{ penggunaYangDihapus?.nama }}</strong>
-            akan dihapus secara permanen dan tidak dapat dikembalikan.
+            Data <strong>{{ penggunaYangDihapus?.nama }}</strong> akan dihapus secara permanen dan tidak dapat dikembalikan.
           </DialogDescription>
         </DialogHeader>
 
         <p v-if="deleteErrorMessage" class="form-error">{{ deleteErrorMessage }}</p>
 
         <DialogFooter>
-          <Button variant="outline" :disabled="isDeleting" @click="tutupModalHapus">
-            Batal
-          </Button>
+          <Button variant="outline" :disabled="isDeleting" @click="tutupModalHapus">Batal</Button>
           <Button variant="destructive" :disabled="isDeleting" @click="konfirmasiHapus">
             <Loader2 v-if="isDeleting" class="button-icon spinner" />
             {{ isDeleting ? 'Menghapus...' : 'Ya, Hapus Data' }}
@@ -360,206 +312,37 @@ async function konfirmasiHapus() {
 </template>
 
 <style scoped>
-.dashboard-page h2 {
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin-bottom: 20px;
-}
-
-.stats-grid {
-  display: flex;
-  gap: 30px;
-  margin-bottom: 20px;
-}
-
-.stat-card {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  background-color: #ffffff;
-  box-shadow: -3px 0px 0px #1d00f6bc;
-  border: 3px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 15px 60px 15px 15px;
-}
-
-.stat-icon {
-  width: 25px;
-  height: 25px;
-  color: #4338ca;
-}
-
-.stat-value {
-  font-size: 1.375rem;
-  font-weight: 700;
-  color: #111827;
-  line-height: 2.1;
-}
-
-.stat-label {
-  font-size: 15px;
-  font-weight: bold;
-  color: rgb(128, 121, 121);
-}
-
-.search-card {
-  position: relative;
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-  max-width: 420px;
-}
-
-.search-icon {
-  position: absolute;
-  left: 12px;
-  width: 16px;
-  height: 16px;
-  color: #9ca3af;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.content-grid {
-  display: flex;
-  align-items: flex-start;
-  gap: 24px;
-}
-
-.table-card {
-  flex: 1;
-  background-color: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 16px;
-}
-
-.table-header-box {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
-  gap: 20px;
-}
-
-.table-header-box h3 {
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.table-description {
-  color: #6b7280;
-  font-size: 0.8rem;
-  margin-top: 3px;
-}
-
-.action-button-modal {
-  background-color: #0400f6;
-  color: white;
-}
-
-.action-button-modal:hover {
-  background-color: #2624a7;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 8px;
-}
-
-.button-icon {
-  width: 15px;
-  height: 15px;
-}
-
-.loading-state {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 16px;
-  color: #6b7280;
-  font-size: 0.875rem;
-}
-
-.loading-icon,
-.spinner {
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.modal-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 8px 0;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.form-group label {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #374151;
-}
-
-.input-field {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  outline: none;
-  background: white;
-}
-
-.input-field:focus {
-  border-color: #2563eb;
-}
-
-.input-field:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.form-error {
-  color: #dc2626;
-  font-size: 0.875rem;
-}
-
-.peran-badge {
-  display: inline-block;
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 2px 10px;
-  border-radius: 999px;
-}
-
-.peran-admin {
-  background-color: #ede9fe;
-  color: #6d28d9;
-}
-
-.peran-user {
-  background-color: #f3f4f6;
-  color: #4b5563;
-}
-
-.edit-buttons {
-  background-color: rgb(246, 246, 28);
-}
-
-.edit-buttons:hover {
-  background-color: rgb(188, 188, 22);
-}
-
-.delete-buttons:hover {
-  background-color: rgb(204, 21, 21);
-}
+.dashboard-page h2 { font-size: 1.5rem; font-weight: bold; margin-bottom: 20px; }
+.stats-grid { display: flex; gap: 30px; margin-bottom: 20px; }
+.stat-card { display: flex; align-items: center; gap: 14px; background-color: #fff; box-shadow: -3px 0 0 #1d00f6bc; border: 3px solid #e5e7eb; border-radius: 8px; padding: 15px 60px 15px 15px; }
+.stat-icon { width: 25px; height: 25px; color: #4338ca; }
+.stat-value { font-size: 1.375rem; font-weight: 700; color: #111827; line-height: 2.1; }
+.stat-label { font-size: 15px; font-weight: bold; color: rgb(128, 121, 121); }
+.search-card { position: relative; display: flex; align-items: center; margin-bottom: 20px; max-width: 420px; }
+.search-icon { position: absolute; left: 12px; width: 16px; height: 16px; color: #9ca3af; pointer-events: none; z-index: 1; }
+.content-grid { display: flex; align-items: flex-start; gap: 24px; }
+.table-card { flex: 1; background-color: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; }
+.table-header-box { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; gap: 20px; }
+.table-header-box h3 { font-size: 1rem; font-weight: 600; }
+.table-description { color: #6b7280; font-size: .8rem; margin-top: 3px; }
+.action-button-modal { background-color: #0400f6; color: white; }
+.action-button-modal:hover { background-color: #2624a7; }
+.action-buttons { display: flex; gap: 8px; }
+.button-icon { width: 15px; height: 15px; }
+.loading-state { display: flex; align-items: center; gap: 8px; padding: 16px; color: #6b7280; font-size: .875rem; }
+.loading-icon, .spinner { animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.modal-form { display: flex; flex-direction: column; gap: 16px; padding: 8px 0; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group label { font-size: .875rem; font-weight: 500; color: #374151; }
+.input-field { width: 100%; padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: .875rem; outline: none; background: white; }
+.input-field:focus { border-color: #2563eb; }
+.input-field:disabled { cursor: not-allowed; opacity: .6; }
+.form-error { color: #dc2626; font-size: .875rem; }
+.peran-badge { display: inline-block; font-size: .75rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; }
+.peran-admin { background-color: #ede9fe; color: #6d28d9; }
+.peran-user { background-color: #f3f4f6; color: #4b5563; }
+.edit-buttons { background-color: rgb(246, 246, 28); }
+.edit-buttons:hover { background-color: rgb(188, 188, 22); }
+.delete-buttons:hover { background-color: rgb(204, 21, 21); }
 </style>
