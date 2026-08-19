@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 
 const notifikasiEmail = ref(true)
 const notifikasiPush = ref(false)
@@ -10,14 +11,16 @@ const modeGelap = ref(false)
 <template>
   <div class="pengaturan-page">
     <h2>Pengaturan</h2>
+
     <div class="pengaturan-card">
       <h3>Preferensi</h3>
+
       <div class="setting-row">
         <div>
           <p class="setting-title">Notifikasi Email</p>
           <p class="setting-desc">Terima ringkasan aktivitas lewat email</p>
         </div>
-        <input type="checkbox" v-model="notifikasiEmail" class="setting-toggle" />
+        <Checkbox v-model="notifikasiEmail" />
       </div>
 
       <div class="setting-row">
@@ -25,15 +28,15 @@ const modeGelap = ref(false)
           <p class="setting-title">Notifikasi Push</p>
           <p class="setting-desc">Terima notifikasi langsung di perangkat</p>
         </div>
-        <input type="checkbox" v-model="notifikasiPush" class="setting-toggle" />
+        <Checkbox v-model="notifikasiPush" />
       </div>
-      
+
       <div class="setting-row">
         <div>
           <p class="setting-title">Mode Gelap</p>
           <p class="setting-desc">Ganti tampilan aplikasi ke tema gelap</p>
         </div>
-        <input type="checkbox" v-model="modeGelap" class="setting-toggle" />
+        <Checkbox v-model="modeGelap" />
       </div>
 
       <div class="pengaturan-actions">
@@ -81,12 +84,6 @@ const modeGelap = ref(false)
 .setting-desc {
   font-size: 0.75rem;
   color: #6b7280;
-}
-
-.setting-toggle {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
 }
 
 .pengaturan-actions {
