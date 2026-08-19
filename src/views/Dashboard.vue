@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+
 import {
   Table,
   TableBody,
@@ -19,6 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+
 import {
   Loader2,
   Pencil,
@@ -352,6 +354,8 @@ async function konfirmasiHapus() {
             >
               <option value="User">User</option>
               <option value="Admin">Admin</option>
+              <option value="Staff">Staff</option>
+              <option value="Manager">Manager</option>
             </select>
           </div>
 
@@ -386,7 +390,6 @@ async function konfirmasiHapus() {
       </DialogContent>
     </Dialog>
 
-    <!-- Modal Konfirmasi Hapus -->
     <Dialog
       :open="isDeleteModalOpen"
       @update:open="isDeleteModalOpen = $event"

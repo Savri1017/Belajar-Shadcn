@@ -5,9 +5,6 @@ import { LayoutDashboard, Folder, Settings, User } from 'lucide-vue-next'
 
 const route = useRoute()
 
-// Daftar menu utama sidebar. Tambahkan item baru di sini untuk membuka
-// halaman baru — cukup buat komponen di src/views lalu daftarkan
-// route-nya di src/router/index.js.
 const menuUtama = [
   { nama: 'Dashboard', path: '/', icon: LayoutDashboard },
   { nama: 'Proyek', path: '/proyek', icon: Folder },
@@ -48,7 +45,7 @@ function isMenuAktif(path) {
         :class="{ 'sidebar-btn-active': isMenuAktif('/pengaturan') }"
       >
         <RouterLink to="/pengaturan">
-          <Settings class="icon" />
+          <Settings class="icon"/>
           Pengaturan
         </RouterLink>
       </Button>
