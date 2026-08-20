@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Combobox } from '@/components/ui/combobox'
 import { Input } from '@/components/ui/input'
@@ -22,6 +22,17 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationFirst,
+  PaginationItem,
+  PaginationLast,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination'
 
 import {
   Briefcase,
@@ -48,6 +59,8 @@ const idEdit = ref(null)
 const errorMessage = ref('')
 const deleteErrorMessage = ref('')
 const searchQuery = ref('')
+const itemsPerPage = 10
+const currentPage = ref(1)
 
 onMounted(() => userStore.fetchPengguna())
 
@@ -70,6 +83,25 @@ const dataPenggunaTersaring = computed(() => {
 const dataPenggunaTerurut = computed(() => {
   const urutanPeran = { Admin: 1, Manager: 2, Staff: 3 }
   return [...dataPenggunaTersaring.value].sort((a, b) => (urutanPeran[a.peran] ?? 99) - (urutanPeran[b.peran] ?? 99))
+})
+
+const totalHalaman = computed(() => Math.max(1, Math.ceil(dataPenggunaTerurut.value.length / itemsPerPage)))
+
+const dataPenggunaHalamanIni = computed(() => {
+  const awal = (currentPage.value - 1) * itemsPerPage
+  return dataPenggunaTerurut.value.slice(awal, awal + itemsPerPage)
+})
+
+// Balik ke halaman 1 setiap kali pencarian berubah, biar hasil filter baru selalu mulai dari awal
+watch(searchQuery, () => {
+  currentPage.value = 1
+})
+
+// Kalau data berkurang (mis. setelah hapus) dan halaman aktif jadi kosong, mundur ke halaman terakhir yang valid
+watch(dataPenggunaTerurut, () => {
+  if (currentPage.value > totalHalaman.value) {
+    currentPage.value = totalHalaman.value
+  }
 })
 
 function bukaModalTambah() {
@@ -183,13 +215,13 @@ async function konfirmasiHapus() {
 
     <div class="search-card">
       <Search class="search-icon" />
-      <Input v-model="searchQuery" type="text" placeholder="Cari berdasarkan nama, email, atau ID..." class="pl-9" />
+      <Input v-model="searchQuery" type="text" placeholder="Cari berdasarkan Nama, Email atau Peran..." class="pl-9" />
     </div>
 
     <div class="content-grid">
       <div class="table-card">
         <div class="table-header-box">
-          <div><h3>Daftar Pengguna</h3><p class="table-description">Kelola data pengguna dari sini.</p></div>
+          <div><h3>Daftar Pengguna</h3></div>
           <Button class="action-button-modal" :disabled="isSubmitting || isDeleting" @click="bukaModalTambah">Tambah Pengguna</Button>
         </div>
 
@@ -202,12 +234,12 @@ async function konfirmasiHapus() {
               <TableHead>No</TableHead>
               <TableHead>Nama</TableHead>
               <TableHead>Email</TableHead>
-              <TableHead>Peran</TableHead>
+              <TableHead>Jabatan</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            <TableRow v-for="(item, index) in dataPenggunaTerurut" :key="item.id">
-              <TableCell>{{ index + 1 }}</TableCell>
+            <TableRow v-for="(item, index) in dataPenggunaHalamanIni" :key="item.id">
+              <TableCell>{{ (currentPage - 1) * itemsPerPage + index + 1 }}</TableCell>
               <TableCell>{{ item.nama }}</TableCell>
               <TableCell>{{ item.email }}</TableCell>
               <TableCell>
@@ -218,12 +250,44 @@ async function konfirmasiHapus() {
                 }">{{ item.peran }}</span>
               </TableCell>
               <TableCell class="action-buttons">
-                <Button variant="outline" size="sm" class="edit-buttons" :disabled="isSubmitting || isDeleting" @click="editData(item)"><Pencil class="button-icon" />Edit</Button>
-                <Button variant="destructive" size="sm" class="delete-buttons" :disabled="isSubmitting || isDeleting" @click="bukaModalHapus(item)"><Trash2 class="button-icon" />Hapus</Button>
+                <Button variant="outline" size="sm" class="edit-buttons" :disabled="isSubmitting || isDeleting" @click="editData(item)"><Pencil class="button-icon" /></Button>
+                <Button variant="destructive" size="sm" class="delete-buttons" :disabled="isSubmitting || isDeleting" @click="bukaModalHapus(item)"><Trash2 class="button-icon" /></Button>
               </TableCell>
             </TableRow>
           </TableBody>
         </Table>
+
+        <div v-if="dataPenggunaTerurut.length > 0" class="pagination-footer">
+          <p class="pagination-info">
+            Menampilkan {{ (currentPage - 1) * itemsPerPage + 1 }}–{{ Math.min(currentPage * itemsPerPage, dataPenggunaTerurut.length) }}
+            dari {{ dataPenggunaTerurut.length }} data
+          </p>
+
+          <Pagination
+            v-model:page="currentPage"
+            :items-per-page="itemsPerPage"
+            :total="dataPenggunaTerurut.length"
+            :sibling-count="1"
+            show-edges
+          >
+            <PaginationContent v-slot="{ items }">
+              <PaginationPrevious />
+
+              <template v-for="(item, idx) in items" :key="idx">
+                <PaginationItem
+                  v-if="item.type === 'page'"
+                  :value="item.value"
+                  :is-active="item.value === currentPage"
+                >
+                  {{ item.value }}
+                </PaginationItem>
+                <PaginationEllipsis v-else />
+              </template>
+
+              <PaginationNext />
+            </PaginationContent>
+          </Pagination>
+        </div>
       </div>
     </div>
 
@@ -236,7 +300,7 @@ async function konfirmasiHapus() {
         <form class="modal-form" @submit.prevent="simpanData">
           <div class="form-group"><label for="nama">Nama Lengkap</label><Input id="nama" v-model="namaInput" :disabled="isSubmitting" placeholder="Masukkan nama..." /></div>
           <div class="form-group"><label for="email">Email</label><Input id="email" v-model="emailInput" type="email" :disabled="isSubmitting" placeholder="Masukkan email..." /></div>
-          <div class="form-group"><label for="peran">Peran</label><Combobox id="peran" v-model="peranInput" :options="pilihanPeran" placeholder="Pilih atau ketik peran..." :disabled="isSubmitting" /></div>
+          <div class="form-group"><label for="peran">Jabatan</label><Combobox id="peran" v-model="peranInput" :options="pilihanPeran" placeholder="Pilih atau ketik peran..." :disabled="isSubmitting" /></div>
           <p v-if="errorMessage" class="form-error">{{ errorMessage }}</p>
           <DialogFooter>
             <Button type="button" variant="outline" :disabled="isSubmitting" @click="tutupModalForm">Batal</Button>
@@ -302,7 +366,7 @@ async function konfirmasiHapus() {
   align-items: center;
   gap: 40px;
   background-color: #fff;
-  box-shadow: -3px 0 0 #c4c402bc;
+  box-shadow: -3px 0 0 #dada03;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   padding: 20px 30px 15px 15px;
@@ -324,12 +388,12 @@ async function konfirmasiHapus() {
   height: 50px;
   padding: 11px;
   border-radius: 10px;
-  background-color: #4438ca72;
+  background-color: #4438ca49;
   color: #4338ca;
 }
 
 .stat-admin {
-  background-color: #7cd87986;
+  background-color: #7cd87965;
   color: #0e8b48;
 }
 
@@ -392,9 +456,8 @@ async function konfirmasiHapus() {
 .table-header-box {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   margin-bottom: 20px;
-  gap: 40px;
+  gap: 50px;
 }
 
 .table-header-box h3 {
@@ -467,7 +530,7 @@ async function konfirmasiHapus() {
 }
 
 .form-error {
-  color: #dc2626;
+  color: #ff1414;
   font-size: 0.875rem;
 }
 
@@ -503,6 +566,22 @@ async function konfirmasiHapus() {
 }
 
 .delete-buttons:hover {
-  background-color: rgb(204, 21, 21);
+  background-color: rgb(136, 13, 13);
+}
+
+.pagination-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.pagination-info {
+  color: #6b7280;
+  font-size: 0.8rem;
 }
 </style>

@@ -179,10 +179,12 @@ function eksekusiLogout() {
   font-weight: 500;
   color: #374151;
   text-decoration: none;
+  padding: 6px 15px 6px 15px;
+  border-radius: 8px;
 }
 
 .menu-link:hover {
-  color: #2563eb;
+  background-color: #c7c2c241;
 }
 
 .avatar-trigger {
