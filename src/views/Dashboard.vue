@@ -27,9 +27,7 @@ import {
   Pagination,
   PaginationContent,
   PaginationEllipsis,
-  PaginationFirst,
   PaginationItem,
-  PaginationLast,
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination'
@@ -92,12 +90,10 @@ const dataPenggunaHalamanIni = computed(() => {
   return dataPenggunaTerurut.value.slice(awal, awal + itemsPerPage)
 })
 
-// Balik ke halaman 1 setiap kali pencarian berubah, biar hasil filter baru selalu mulai dari awal
 watch(searchQuery, () => {
   currentPage.value = 1
 })
 
-// Kalau data berkurang (mis. setelah hapus) dan halaman aktif jadi kosong, mundur ke halaman terakhir yang valid
 watch(dataPenggunaTerurut, () => {
   if (currentPage.value > totalHalaman.value) {
     currentPage.value = totalHalaman.value
@@ -300,7 +296,7 @@ async function konfirmasiHapus() {
         <form class="modal-form" @submit.prevent="simpanData">
           <div class="form-group"><label for="nama">Nama Lengkap</label><Input id="nama" v-model="namaInput" :disabled="isSubmitting" placeholder="Masukkan nama..." /></div>
           <div class="form-group"><label for="email">Email</label><Input id="email" v-model="emailInput" type="email" :disabled="isSubmitting" placeholder="Masukkan email..." /></div>
-          <div class="form-group"><label for="peran">Jabatan</label><Combobox id="peran" v-model="peranInput" :options="pilihanPeran" placeholder="Pilih atau ketik peran..." :disabled="isSubmitting" /></div>
+          <div class="form-group"><label for="peran">Jabatan</label><Combobox id="peran" v-model="peranInput" :options="pilihanPeran" placeholder="Pilih atau ketik Jabatan..." :disabled="isSubmitting" /></div>
           <p v-if="errorMessage" class="form-error">{{ errorMessage }}</p>
           <DialogFooter>
             <Button type="button" variant="outline" :disabled="isSubmitting" @click="tutupModalForm">Batal</Button>
