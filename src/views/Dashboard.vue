@@ -4,47 +4,26 @@ import { Button } from '@/components/ui/button'
 import { Combobox } from '@/components/ui/combobox'
 import { Input } from '@/components/ui/input'
 import { useUserStore } from '@/stores/userStore'
+import { useJabatanStore } from '@/stores/jabatanStore'
 
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog'
 
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
 
 import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationNext,
-  PaginationPrevious,
+  Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationNext, PaginationPrevious,
 } from '@/components/ui/pagination'
 
-import {
-  Briefcase,
-  Loader2,
-  Pencil,
-  Search,
-  ShieldCheck,
-  Trash2,
-  User,
-  Users,
-} from 'lucide-vue-next'
+import { Briefcase, Loader2, Pencil, Search, ShieldCheck, Trash2, User, Users } from 'lucide-vue-next'
 
 const userStore = useUserStore()
-const pilihanPeran = ['Admin', 'Manager', 'Staff']
+const jabatanStore = useJabatanStore()
+const daftarJabatanNama = computed(() => jabatanStore.daftarJabatan.map((j) => j.nama_jabatan))
+
 const isModalOpen = ref(false)
 const isSubmitting = ref(false)
 const isDeleteModalOpen = ref(false)
@@ -59,45 +38,36 @@ const deleteErrorMessage = ref('')
 const searchQuery = ref('')
 const itemsPerPage = 10
 const currentPage = ref(1)
+let searchDebounceTimer = null
 
-onMounted(() => userStore.fetchPengguna())
+function refreshData() {
+  return userStore.fetchPengguna({
+    search: searchQuery.value.trim(),
+    page: currentPage.value,
+    perPage: itemsPerPage,
+  })
+}
 
-const totalPengguna = computed(() => userStore.dataPengguna.length)
-const totalAdmin = computed(() => userStore.dataPengguna.filter((item) => item.peran === 'Admin').length)
-const totalManager = computed(() => userStore.dataPengguna.filter((item) => item.peran === 'Manager').length)
-const totalStaff = computed(() => userStore.dataPengguna.filter((item) => item.peran === 'Staff').length)
-
-const dataPenggunaTersaring = computed(() => {
-  const kataKunci = searchQuery.value.trim().toLowerCase()
-  if (!kataKunci) return userStore.dataPengguna
-  return userStore.dataPengguna.filter((item) =>
-    String(item.id).includes(kataKunci) ||
-    (item.nama ?? '').toLowerCase().includes(kataKunci) ||
-    (item.email ?? '').toLowerCase().includes(kataKunci) ||
-    (item.peran ?? '').toLowerCase().includes(kataKunci)
-  )
+onMounted(() => {
+  refreshData()
+  jabatanStore.fetchJabatan()
 })
 
-const dataPenggunaTerurut = computed(() => {
-  const urutanPeran = { Admin: 1, Manager: 2, Staff: 3 }
-  return [...dataPenggunaTersaring.value].sort((a, b) => (urutanPeran[a.peran] ?? 99) - (urutanPeran[b.peran] ?? 99))
+// pindah halaman -> langsung tarik ulang dari server
+watch(currentPage, () => {
+  refreshData()
 })
 
-const totalHalaman = computed(() => Math.max(1, Math.ceil(dataPenggunaTerurut.value.length / itemsPerPage)))
-
-const dataPenggunaHalamanIni = computed(() => {
-  const awal = (currentPage.value - 1) * itemsPerPage
-  return dataPenggunaTerurut.value.slice(awal, awal + itemsPerPage)
-})
-
+// ngetik di search bar -> tunggu 400ms biar nggak nembak API tiap huruf
 watch(searchQuery, () => {
-  currentPage.value = 1
-})
-
-watch(dataPenggunaTerurut, () => {
-  if (currentPage.value > totalHalaman.value) {
-    currentPage.value = totalHalaman.value
-  }
+  clearTimeout(searchDebounceTimer)
+  searchDebounceTimer = setTimeout(() => {
+    if (currentPage.value !== 1) {
+      currentPage.value = 1 // otomatis refetch lewat watcher currentPage
+    } else {
+      refreshData()
+    }
+  }, 400)
 })
 
 function bukaModalTambah() {
@@ -128,11 +98,11 @@ async function simpanData() {
   if (isSubmitting.value) return
   errorMessage.value = ''
   if (!namaInput.value.trim() || !emailInput.value.trim() || !peranInput.value.trim()) {
-    errorMessage.value = 'Nama, Email, dan Peran wajib diisi.'
+    errorMessage.value = 'Nama, Email, dan Jabatan wajib diisi.'
     return
   }
-  if (!pilihanPeran.includes(peranInput.value.trim())) {
-    errorMessage.value = 'Peran harus Admin, Manager, atau Staff.'
+  if (!daftarJabatanNama.value.includes(peranInput.value.trim())) {
+    errorMessage.value = 'Jabatan harus dipilih dari daftar yang tersedia.'
     return
   }
   const payload = {
@@ -152,6 +122,7 @@ async function simpanData() {
       return
     }
     isModalOpen.value = false
+    await refreshData()
   } finally {
     isSubmitting.value = false
   }
@@ -180,6 +151,12 @@ async function konfirmasiHapus() {
     }
     isDeleteModalOpen.value = false
     penggunaYangDihapus.value = null
+    // kalau ini baris terakhir di halaman >1, mundur satu halaman
+    if (userStore.dataPengguna.length === 1 && currentPage.value > 1) {
+      currentPage.value -= 1
+    } else {
+      await refreshData()
+    }
   } finally {
     isDeleting.value = false
   }
