@@ -53,17 +53,15 @@ onMounted(() => {
   jabatanStore.fetchJabatan()
 })
 
-// pindah halaman -> langsung tarik ulang dari server
 watch(currentPage, () => {
   refreshData()
 })
 
-// ngetik di search bar -> tunggu 400ms biar nggak nembak API tiap huruf
 watch(searchQuery, () => {
   clearTimeout(searchDebounceTimer)
   searchDebounceTimer = setTimeout(() => {
     if (currentPage.value !== 1) {
-      currentPage.value = 1 // otomatis refetch lewat watcher currentPage
+      currentPage.value = 1
     } else {
       refreshData()
     }
@@ -151,7 +149,6 @@ async function konfirmasiHapus() {
     }
     isDeleteModalOpen.value = false
     penggunaYangDihapus.value = null
-    // kalau ini baris terakhir di halaman >1, mundur satu halaman
     if (userStore.dataPengguna.length === 1 && currentPage.value > 1) {
       currentPage.value -= 1
     } else {
@@ -169,26 +166,26 @@ async function konfirmasiHapus() {
 
     <div class="stats-grid">
       <div class="stat-card">
-        <div><p class="stat-label">Total Data</p><p class="stat-value">{{ userStore.isLoading ? '-' : totalPengguna }}</p></div>
+        <div><p class="stat-label">Total Data</p><p class="stat-value">{{ userStore.isLoading ? '-' : userStore.stats.total }}</p></div>
         <Users class="stat-icon" />
       </div>
       <div class="stat-card2">
-        <div><p class="stat-label">Total Admin</p><p class="stat-value">{{ userStore.isLoading ? '-' : totalAdmin }}</p></div>
+        <div><p class="stat-label">Total Admin</p><p class="stat-value">{{ userStore.isLoading ? '-' : userStore.stats.admin }}</p></div>
         <ShieldCheck class="stat-icon stat-admin" />
       </div>
       <div class="stat-card3">
-        <div><p class="stat-label">Total Manager</p><p class="stat-value">{{ userStore.isLoading ? '-' : totalManager }}</p></div>
+        <div><p class="stat-label">Total Manager</p><p class="stat-value">{{ userStore.isLoading ? '-' : userStore.stats.manager }}</p></div>
         <Briefcase class="stat-icon stat-manager" />
       </div>
       <div class="stat-card4">
-        <div><p class="stat-label">Total Staff</p><p class="stat-value">{{ userStore.isLoading ? '-' : totalStaff }}</p></div>
+        <div><p class="stat-label">Total Staff</p><p class="stat-value">{{ userStore.isLoading ? '-' : userStore.stats.staff }}</p></div>
         <User class="stat-icon stat-staff" />
       </div>
     </div>
 
     <div class="search-card">
       <Search class="search-icon" />
-      <Input v-model="searchQuery" type="text" placeholder="Cari berdasarkan Nama, Email atau Peran..." class="pl-9" />
+      <Input v-model="searchQuery" type="text" placeholder="Cari berdasarkan Nama, Email atau Jabatan..." class="pl-9" />
     </div>
 
     <div class="content-grid">
@@ -199,7 +196,7 @@ async function konfirmasiHapus() {
         </div>
 
         <div v-if="userStore.isLoading" class="loading-state"><Loader2 class="loading-icon" /><span>Sedang memuat data dari database...</span></div>
-        <div v-else-if="dataPenggunaTerurut.length === 0" class="loading-state">Tidak ada data yang cocok dengan pencarian "{{ searchQuery }}".</div>
+        <div v-else-if="userStore.dataPengguna.length === 0" class="loading-state">Tidak ada data yang cocok dengan pencarian "{{ searchQuery }}".</div>
 
         <Table v-else>
           <TableHeader>
@@ -211,7 +208,7 @@ async function konfirmasiHapus() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            <TableRow v-for="(item, index) in dataPenggunaHalamanIni" :key="item.id">
+            <TableRow v-for="(item, index) in userStore.dataPengguna" :key="item.id">
               <TableCell>{{ (currentPage - 1) * itemsPerPage + index + 1 }}</TableCell>
               <TableCell>{{ item.nama }}</TableCell>
               <TableCell>{{ item.email }}</TableCell>
@@ -230,16 +227,16 @@ async function konfirmasiHapus() {
           </TableBody>
         </Table>
 
-        <div v-if="dataPenggunaTerurut.length > 0" class="pagination-footer">
+        <div v-if="userStore.dataPengguna.length > 0" class="pagination-footer">
           <p class="pagination-info">
-            Menampilkan {{ (currentPage - 1) * itemsPerPage + 1 }}–{{ Math.min(currentPage * itemsPerPage, dataPenggunaTerurut.length) }}
-            dari {{ dataPenggunaTerurut.length }} data
+            Menampilkan {{ (currentPage - 1) * itemsPerPage + 1 }}–{{ Math.min(currentPage * itemsPerPage, userStore.meta.total) }}
+            dari {{ userStore.meta.total }} data
           </p>
 
           <Pagination
             v-model:page="currentPage"
             :items-per-page="itemsPerPage"
-            :total="dataPenggunaTerurut.length"
+            :total="userStore.meta.total"
             :sibling-count="1"
             show-edges
           >
@@ -273,7 +270,7 @@ async function konfirmasiHapus() {
         <form class="modal-form" @submit.prevent="simpanData">
           <div class="form-group"><label for="nama">Nama Lengkap</label><Input id="nama" v-model="namaInput" :disabled="isSubmitting" placeholder="Masukkan nama..." /></div>
           <div class="form-group"><label for="email">Email</label><Input id="email" v-model="emailInput" type="email" :disabled="isSubmitting" placeholder="Masukkan email..." /></div>
-          <div class="form-group"><label for="peran">Jabatan</label><Combobox id="peran" v-model="peranInput" :options="pilihanPeran" placeholder="Pilih atau ketik Jabatan..." :disabled="isSubmitting" /></div>
+          <div class="form-group"><label for="peran">Jabatan</label><Combobox id="peran" v-model="peranInput" :options="daftarJabatanNama" placeholder="Pilih Jabatan..." :disabled="isSubmitting || jabatanStore.isLoading" /></div>
           <p v-if="errorMessage" class="form-error">{{ errorMessage }}</p>
           <DialogFooter>
             <Button type="button" variant="outline" :disabled="isSubmitting" @click="tutupModalForm">Batal</Button>
