@@ -42,11 +42,9 @@ function isMenuAktif(path) {
       <Button
         as-child
         class="sidebar-btn"
-        :class="{ 'sidebar-btn-active': isMenuAktif('/pengaturan') }"
-      >
+        :class="{ 'sidebar-btn-active': isMenuAktif('/pengaturan') }">
         <RouterLink to="/pengaturan">
-          <Settings class="icon"/>
-          Pengaturan
+            <Settings class="icon"/> Pengaturan
         </RouterLink>
       </Button>
     </div>
@@ -69,7 +67,7 @@ function isMenuAktif(path) {
 .sidebar-title {
   font-weight: bold;
   font-size: 1.25rem;
-  margin-bottom: 32px;
+  margin-bottom: 50px;
   padding: 0 8px;
   color: #111827;
 }
@@ -78,11 +76,11 @@ function isMenuAktif(path) {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 13px;
 }
 
 .sidebar-footer {
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid #000000;
   padding-top: 16px;
 }
 
@@ -91,7 +89,7 @@ function isMenuAktif(path) {
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  gap: 12px;
+  gap: 25px;
 }
 
 .sidebar-btn-active {
