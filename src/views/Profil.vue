@@ -1,15 +1,34 @@
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import FileUploader from '@/components/FileUploader.vue'
+import { getMedia } from '@/services/media.js'
 
 const profil = ref({
+  id: 1,
   nama: 'Budi Santoso',
   email: 'budi@gmail.com',
   peran: 'Admin',
 })
 
+const fotoProfil = ref('')
 const sedangEdit = ref(false)
+
+async function ambilFotoProfil() {
+  try {
+    const media = await getMedia('pengguna', profil.value.id, 'avatar')
+    fotoProfil.value = media[0]?.url || ''
+  } catch (error) {
+    console.error('Gagal mengambil foto profil:', error)
+  }
+}
+
+function fotoBerhasilDiUpload(media) {
+  fotoProfil.value = media.url
+}
+
+onMounted(ambilFotoProfil)
 </script>
 
 <template>
@@ -19,8 +38,8 @@ const sedangEdit = ref(false)
     <div class="profil-card">
       <div class="profil-header">
         <Avatar class="profil-avatar">
-          <AvatarImage src="https://github.com/shadcn.png" alt="Foto profil" />
-          <AvatarFallback>CN</AvatarFallback>
+          <AvatarImage :src="fotoProfil || 'https://github.com/shadcn.png'" alt="Foto profil" />
+          <AvatarFallback>BS</AvatarFallback>
         </Avatar>
         <div>
           <p class="profil-nama">{{ profil.nama }}</p>
@@ -41,6 +60,22 @@ const sedangEdit = ref(false)
           <span class="info-label">Peran</span>
           <input v-model="profil.peran" :readonly="!sedangEdit" class="info-value" />
         </div>
+      </div>
+
+      <div class="foto-section">
+        <div>
+          <p class="info-label">Foto Profil</p>
+          <p class="foto-help">File akan disimpan ke tabel media dengan collection avatar.</p>
+        </div>
+
+        <FileUploader
+          model-type="pengguna"
+          :model-id="profil.id"
+          collection="avatar"
+          accept="image/jpeg,image/png,image/webp"
+          :replace="true"
+          @uploaded="fotoBerhasilDiUpload"
+        />
       </div>
 
       <div class="profil-actions">
@@ -67,7 +102,7 @@ const sedangEdit = ref(false)
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   padding: 24px;
-  max-width: 480px;
+  max-width: 560px;
 }
 
 .profil-header {
@@ -130,6 +165,20 @@ const sedangEdit = ref(false)
 .info-value:not(:read-only) {
   background-color: #ffffff;
   border-color: #2563eb;
+}
+
+.foto-section {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 20px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.foto-help {
+  margin-top: 4px;
+  margin-bottom: 12px;
+  font-size: 0.75rem;
+  color: #6b7280;
 }
 
 .profil-actions {
