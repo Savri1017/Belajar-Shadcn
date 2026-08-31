@@ -15,6 +15,7 @@ const emit = defineEmits(['uploaded', 'error'])
 const input = ref(null)
 const file = ref(null)
 const uploading = ref(false)
+
 const errorMessage = ref('')
 
 function pilihFile(event) {
