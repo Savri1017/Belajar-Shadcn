@@ -1,6 +1,7 @@
 <script setup>
 import { RouterLink, useRoute } from 'vue-router'
 import { Button } from '@/components/ui/button'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { LayoutDashboard, Folder, Settings, User } from 'lucide-vue-next'
 
 const route = useRoute()
@@ -19,8 +20,8 @@ function isMenuAktif(path) {
 <template>
   <aside class="sidebar-container">
     <div class="sidebar-title">
-      Menu Utama
-    </div>
+      Dashboard Admin 
+    </div>  
 
     <nav class="sidebar-nav">
       <Button
@@ -66,11 +67,14 @@ function isMenuAktif(path) {
 
 .sidebar-title {
   font-weight: bold;
-  font-size: 1.25rem;
+  font-size: 19px;
   margin-bottom: 50px;
   padding: 0 8px;
   color: #111827;
+  display: flex;
+  gap: 10px;
 }
+
 
 .sidebar-nav {
   flex: 1;

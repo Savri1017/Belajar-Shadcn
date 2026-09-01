@@ -77,12 +77,12 @@ function eksekusiLogout() {
       Vue Shadcn
     </div>
 
-    <div class="navbar-menu">
+    <!-- <div class="navbar-menu">
       <a href="#" class="menu-link">Beranda</a>
       <a href="#" class="menu-link">Fitur</a>
       <a href="#" class="menu-link">Portofolio</a>
       <a href="#" class="menu-link">Kontak</a>
-    </div>
+    </div> -->
 
     <div class="navbar-actions">
       <DropdownMenu>
