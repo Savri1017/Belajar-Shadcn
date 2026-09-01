@@ -1,15 +1,15 @@
 import api from '@/config/api.js'
 
-export const getPenggunaMedia = (penggunaId) =>
-  api.get(`/media/pengguna/${penggunaId}`)
+export const getMedia = (modelType, modelId) =>
+  api.get(`/media/${modelType}/${modelId}`)
 
-export const uploadPenggunaMedia = (penggunaId, file, collection = 'default', altText = '') => {
+export const uploadMedia = (modelType, modelId, file, collection = 'default', altText = '') => {
   const formData = new FormData()
   formData.append('file', file)
   formData.append('collection', collection)
   if (altText) formData.append('alt_text', altText)
 
-  return api.post(`/media/pengguna/${penggunaId}`, formData)
+  return api.post(`/media/${modelType}/${modelId}`, formData)
 }
 
 export const deleteMedia = (mediaId) =>
