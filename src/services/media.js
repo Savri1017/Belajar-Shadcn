@@ -1,28 +1,21 @@
 import api from '@/config/api.js'
 
-export async function getMedia(modelType, modelId, collection = null) {
-  const response = await api.get(`/media/${modelType}/${modelId}`, {
+// collection opsional: kalau diisi ('avatar', 'dokumen', dst), backend cuma
+// balikin baris tabel media yang collection-nya cocok. Kalau dikosongin,
+// semua media milik model tetap kebalikin (perilaku lama tetap jalan).
+export const getMedia = (modelType, modelId, collection = null) =>
+  api.get(`/media/${modelType}/${modelId}`, {
     params: collection ? { collection } : {},
   })
 
-  return response.data
-}
-
-export async function uploadMedia(modelType, modelId, file, options = {}) {
+export const uploadMedia = (modelType, modelId, file, collection = 'default', altText = '') => {
   const formData = new FormData()
   formData.append('file', file)
-  formData.append('collection', options.collection || 'default')
-  formData.append('replace', options.replace ? '1' : '0')
+  formData.append('collection', collection)
+  if (altText) formData.append('alt_text', altText)
 
-  if (options.altText) {
-    formData.append('alt_text', options.altText)
-  }
-
-  const response = await api.post(`/media/${modelType}/${modelId}`, formData)
-  return response.data
+  return api.post(`/media/${modelType}/${modelId}`, formData)
 }
 
-export async function deleteMedia(mediaId) {
-  const response = await api.delete(`/media/${mediaId}`)
-  return response.data
-}
+export const deleteMedia = (mediaId) =>
+  api.delete(`/media/${mediaId}`)
