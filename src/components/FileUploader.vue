@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { Button } from '@/components/ui/button'
-import { uploadPenggunaMedia } from '@/services/media.js'
+import { uploadMedia } from '@/services/media.js'
 
 const props = defineProps({
   modelType: { type: String, required: true },
@@ -26,16 +26,12 @@ const upload = async () => {
     return
   }
 
-  if (props.modelType !== 'pengguna') {
-    error.value = 'Endpoint model ini belum tersedia di backend.'
-    return
-  }
-
   uploading.value = true
   error.value = ''
 
   try {
-    const response = await uploadPenggunaMedia(
+    const response = await uploadMedia(
+      props.modelType,
       props.modelId,
       selectedFile.value,
       props.collection,
