@@ -1,4 +1,3 @@
-```js
 import api from '@/config/api.js'
 
 // collection opsional.
@@ -31,4 +30,3 @@ export const uploadMedia = (
 
 export const deleteMedia = (mediaId) =>
   api.delete(`/media/${mediaId}`)
-```
