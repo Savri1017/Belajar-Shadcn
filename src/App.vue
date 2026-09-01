@@ -1,6 +1,7 @@
 <script setup>
 import Sidebar from '@/components/Sidebar.vue'
 import Navbar from '@/components/Navbar.vue'
+import ApiNotification from '@/components/ApiNotification.vue'
 </script>
 
 <template>
@@ -14,6 +15,8 @@ import Navbar from '@/components/Navbar.vue'
         <RouterView />
       </main>
     </div>
+
+    <ApiNotification />
   </div>
 </template>
 
