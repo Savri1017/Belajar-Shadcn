@@ -15,7 +15,6 @@ const emit = defineEmits(['uploaded', 'error'])
 const input = ref(null)
 const file = ref(null)
 const uploading = ref(false)
-
 const errorMessage = ref('')
 
 function pilihFile(event) {
@@ -60,7 +59,7 @@ async function upload() {
     <div class="flex items-center gap-3">
       <span v-if="file" class="text-sm text-muted-foreground truncate">
         {{ file.name }}
-      </span>
+      </span>x  
       <Button type="button" :disabled="!file || uploading" @click="upload">
         {{ uploading ? 'Mengupload...' : 'Upload File' }}
       </Button>
