@@ -3,6 +3,7 @@ import { RouterLink, useRoute } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { LayoutDashboard, Folder, Settings, User } from 'lucide-vue-next'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 const route = useRoute()
 
@@ -20,8 +21,8 @@ function isMenuAktif(path) {
 <template>
   <aside class="sidebar-container">
     <div class="sidebar-title">
-      Dashboard Admin 
-    </div>  
+      Menu Utama
+    </div>
 
     <nav class="sidebar-nav">
       <Button
@@ -65,14 +66,18 @@ function isMenuAktif(path) {
   top: 0;
 }
 
+.avatar-box {
+  border-radius: 10px;
+  height: 45px;
+  width: 45px;
+}
+
 .sidebar-title {
   font-weight: bold;
-  font-size: 19px;
+  font-size: 1.25rem;
   margin-bottom: 50px;
   padding: 0 8px;
   color: #111827;
-  display: flex;
-  gap: 10px;
 }
 
 

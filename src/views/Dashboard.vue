@@ -317,7 +317,7 @@ async function konfirmasiHapus() {
   box-shadow: -3px 0 0 #1d00f6bc;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
-  padding: 20px 30px 15px 15px;
+  padding: 30px 30px 25px 15px;
 }
 
 .stat-card2{
