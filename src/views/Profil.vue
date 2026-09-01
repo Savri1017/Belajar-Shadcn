@@ -200,45 +200,6 @@ function formatUkuran(bytes) {
         </div>
       </template>
     </div>
-
-    <!-- Section baru: upload file SELAIN avatar, tetap ke tabel `media` yang sama,
-         cuma beda nilai collection ('dokumen' vs 'avatar') -->
-    <div class="profil-card dokumen-card">
-      <h3 class="dokumen-title">Dokumen Pendukung</h3>
-      <p class="dokumen-desc">
-        Upload berkas lain seperti KTP, CV, atau sertifikat. Disimpan di tabel yang
-        sama dengan foto profil, cuma ditandai dengan label <code>collection: dokumen</code>.
-      </p>
-
-      <FileUploader
-        model-type="pengguna"
-        :model-id="ID_PENGGUNA_AKTIF"
-        collection="dokumen"
-        accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
-        @uploaded="muatDokumen"
-      />
-
-      <p v-if="errorDokumen" class="form-error">{{ errorDokumen }}</p>
-
-      <div v-if="isLoadingDokumen" class="loading-state">
-        <Loader2 class="loading-icon" /><span>Memuat dokumen...</span>
-      </div>
-      <p v-else-if="daftarDokumen.length === 0" class="dokumen-empty">
-        Belum ada dokumen yang diupload.
-      </p>
-      <ul v-else class="dokumen-list">
-        <li v-for="item in daftarDokumen" :key="item.id" class="dokumen-item">
-          <FileText class="dokumen-icon" />
-          <a :href="`${STORAGE_URL}/${item.path}`" target="_blank" class="dokumen-nama">
-            {{ item.file_name }}
-          </a>
-          <span class="dokumen-ukuran">{{ formatUkuran(item.size) }}</span>
-          <button type="button" class="dokumen-hapus" title="Hapus dokumen" @click="hapusDokumen(item)">
-            <Trash2 class="button-icon" />
-          </button>
-        </li>
-      </ul>
-    </div>
   </div>
 </template>
 
