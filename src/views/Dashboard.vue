@@ -5,19 +5,9 @@ import { Combobox } from '@/components/ui/combobox'
 import { Input } from '@/components/ui/input'
 import { useUserStore } from '@/stores/userStore'
 import { useJabatanStore } from '@/stores/jabatanStore'
-
-import {
-  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
-} from '@/components/ui/dialog'
-
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from '@/components/ui/table'
-
-import {
-  Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationNext, PaginationPrevious,
-} from '@/components/ui/pagination'
-
+import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,} from '@/components/ui/dialog'
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from '@/components/ui/table'
+import {Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationNext, PaginationPrevious,} from '@/components/ui/pagination'
 import { Briefcase, Loader2, Pencil, Search, ShieldCheck, Trash2, User, Users } from 'lucide-vue-next'
 
 const userStore = useUserStore()
