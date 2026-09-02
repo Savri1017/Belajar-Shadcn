@@ -243,7 +243,7 @@ async function konfirmasiHapus() {
               </TableCell>
               <TableCell class="action-buttons">
                 <Button variant="outline" size="sm" class="edit-buttons" :disabled="isSubmitting || isDeleting" @click="editData(item)"><Pencil class="button-icon" /></Button>
-                <Button variant="destructive" size="sm" class="delete-buttons" :disabled="isSubmitting || isDeleting" @click="bukaModalHapus(item)"><Trash2 class="button-icon" /></Button>
+                <Button variant="outline" size="sm" class="delete-buttons" :disabled="isSubmitting || isDeleting" @click="bukaModalHapus(item)"><Trash2 class="button-icon-delete" /></Button>
               </TableCell>
             </TableRow>
           </TableBody>
@@ -494,6 +494,13 @@ async function konfirmasiHapus() {
   height: 15px;
 }
 
+.button-icon-delete {
+  width: 15px;
+  height: 15px;
+  color: #ff1414;
+}
+
+
 .loading-state {
   display: flex;
   align-items: center;
@@ -567,16 +574,12 @@ async function konfirmasiHapus() {
   color: #4b5563;
 }
 
-.edit-buttons {
-  background-color: rgb(246, 246, 28);
-}
-
 .edit-buttons:hover {
-  background-color: rgb(188, 188, 22);
+  background-color: rgba(161, 161, 155, 0.458);
 }
 
 .delete-buttons:hover {
-  background-color: rgb(136, 13, 13);
+  background-color:  rgba(161, 161, 155, 0.458);
 }
 
 .pagination-footer {
