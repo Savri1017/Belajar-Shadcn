@@ -31,7 +31,7 @@ const props = defineProps({
   },
 });
 
-const emits = defineEmits(["update:modelValue"]);
+const emits = defineEmits(["update:modelValue", "update:open"]);
 
 const normalizedOptions = computed(() =>
   props.options.map((option) =>
@@ -51,6 +51,7 @@ const internalValue = computed({
     :disabled="disabled"
     reset-search-term-on-blur
     class="w-full"
+    @update:open="emits('update:open', $event)"
   >
     <ComboboxAnchor as-child class="w-full">
       <ComboboxTrigger as-child>

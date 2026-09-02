@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -11,6 +11,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { KeyRound, LogOut } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
+import { useUserStore, ID_PENGGUNA_AKTIF } from '@/stores/userStore'
 
 import {
   Dialog,
@@ -19,6 +20,17 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
+
+const userStore = useUserStore()
+
+// Navbar tampil di semua halaman, jadi dia yang paling sering jadi
+// komponen pertama yang mount. Kalau data pengguna aktif atau avatarnya
+// belum pernah diambil sama sekali, ambil sekarang. Kalau sudah ada
+// (misal user barusan dari halaman Profil), tidak usah fetch ulang.
+onMounted(() => {
+  if (!userStore.penggunaAktif) userStore.fetchPenggunaById(ID_PENGGUNA_AKTIF)
+  if (!userStore.avatarAktif) userStore.fetchAvatarAktif()
+})
 
 const isPasswordModalOpen = ref(false)
 const passwordLama = ref('')
@@ -65,26 +77,26 @@ function eksekusiLogout() {
       Vue Shadcn
     </div>
 
-    <div class="navbar-menu">
+    <!-- <div class="navbar-menu">
       <a href="#" class="menu-link">Beranda</a>
       <a href="#" class="menu-link">Fitur</a>
       <a href="#" class="menu-link">Portofolio</a>
       <a href="#" class="menu-link">Kontak</a>
-    </div>
+    </div> -->
 
     <div class="navbar-actions">
       <DropdownMenu>
         <DropdownMenuTrigger class="avatar-trigger">
           <Avatar class="avatar-box">
-            <AvatarImage src="https://github.com/shadcn.png" alt="User Avatar" />
-            <AvatarFallback>CN</AvatarFallback>
+            <AvatarImage :src="userStore.avatarUrl ?? 'https://github.com/shadcn.png'" alt="User Avatar" />
+            <AvatarFallback>{{ (userStore.penggunaAktif?.nama ?? 'CN').slice(0, 2).toUpperCase() }}</AvatarFallback>
           </Avatar>
         </DropdownMenuTrigger>
 
         <DropdownMenuContent align="end">
           <DropdownMenuLabel class="user-info">
-            <p class="user-name">Budi Santoso</p>
-            <p class="user-email">budi@gmail.com</p>
+            <p class="user-name">{{ userStore.penggunaAktif?.nama ?? 'Memuat...' }}</p>
+            <p class="user-email">{{ userStore.penggunaAktif?.email ?? '' }}</p>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
 

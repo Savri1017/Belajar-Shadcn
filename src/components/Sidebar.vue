@@ -2,6 +2,7 @@
 import { RouterLink, useRoute } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { LayoutDashboard, Folder, Settings, User } from 'lucide-vue-next'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 const route = useRoute()
 
@@ -19,7 +20,14 @@ function isMenuAktif(path) {
 <template>
   <aside class="sidebar-container">
     <div class="sidebar-title">
-      Menu Utama
+      <Avatar class="avatar-box">
+        <AvatarImage src="https://github.com/evilrabbit.png" alt="Logo Avatar" />
+          <AvatarFallback>ER</AvatarFallback>
+      </Avatar>
+      <div class="title">
+        Perusahaan
+        <p class="desc-title">Dashboard Admin</p>
+      </div>   
     </div>
 
     <nav class="sidebar-nav">
@@ -64,12 +72,26 @@ function isMenuAktif(path) {
   top: 0;
 }
 
+.avatar-box {
+  border-radius: 10px;
+  height: 45px;
+  width: 45px;
+}
+
 .sidebar-title {
   font-weight: bold;
-  font-size: 1.25rem;
+  font-size: 18px;
   margin-bottom: 50px;
   padding: 0 8px;
   color: #111827;
+  display: flex;
+  gap: 20px;
+}
+
+.desc-title {
+  font-size: 12px;
+  font-weight: 450;
+  color: #5c5959;
 }
 
 .sidebar-nav {

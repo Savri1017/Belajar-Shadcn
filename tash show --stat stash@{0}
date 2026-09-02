@@ -1,0 +1,10 @@
+[33mf1f1a82[m[33m ([m[1;35mrefs/stash[m[33m)[m On feature/polymorphic-media: perubahan Navbar Sidebar sebelum pindah branch
+[33m298ce7b[m index on feature/polymorphic-media: 189cf6e Merge branch 'main' into feature/polymorphic-media
+[33m189cf6e[m[33m ([m[1;31morigin/feature/polymorphic-media[m[33m, [m[1;32mfeature/polymorphic-media[m[33m)[m Merge branch 'main' into feature/polymorphic-media
+[33m1faf11b[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature/axios-interceptor-notification[m[33m, [m[1;31morigin/feature/axios-interceptor-notification[m[33m)[m feat: mount API notification component
+[33m043e724[m feat: add axios response interceptor notifications
+[33m2a4136b[m feat: add API notification component
+[33mb458be0[m its
+[33mc1f02b9[m iya
+[33m5d5cad4[m tez
+[33maeff40c[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m refactor: make file uploader support polymorphic models

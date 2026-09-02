@@ -1,3 +1,4 @@
+```vue
 <script setup>
 import { ref } from 'vue'
 import { Button } from '@/components/ui/button'
@@ -8,38 +9,50 @@ const props = defineProps({
   modelId: { type: [Number, String], required: true },
   collection: { type: String, default: 'default' },
   accept: { type: String, default: 'image/*,.pdf,.doc,.docx,.xls,.xlsx' },
+  replace: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['uploaded'])
-const selectedFile = ref(null)
-const uploading = ref(false)
-const error = ref('')
+const emit = defineEmits(['uploaded', 'error'])
 
-const chooseFile = (event) => {
-  selectedFile.value = event.target.files?.[0] ?? null
-  error.value = ''
+const input = ref(null)
+const file = ref(null)
+const uploading = ref(false)
+const errorMessage = ref('')
+
+function pilihFile(event) {
+  file.value = event.target.files?.[0] || null
+  errorMessage.value = ''
 }
 
-const upload = async () => {
-  if (!selectedFile.value) {
-    error.value = 'Pilih file terlebih dahulu.'
-    return
-  }
+async function upload() {
+  if (!file.value || uploading.value) return
 
   uploading.value = true
-  error.value = ''
+  errorMessage.value = ''
 
   try {
-    const response = await uploadMedia(
+    const media = await uploadMedia(
       props.modelType,
       props.modelId,
-      selectedFile.value,
-      props.collection,
+      file.value,
+      {
+        collection: props.collection,
+        replace: props.replace,
+      }
     )
-    emit('uploaded', response.data)
-    selectedFile.value = null
-  } catch (err) {
-    error.value = err.response?.data?.message || 'Upload file gagal.'
+
+    emit('uploaded', media)
+
+    file.value = null
+
+    if (input.value) {
+      input.value.value = ''
+    }
+  } catch (error) {
+    errorMessage.value =
+      error.response?.data?.message || 'File gagal diupload.'
+
+    emit('error', error)
   } finally {
     uploading.value = false
   }
@@ -49,22 +62,34 @@ const upload = async () => {
 <template>
   <div class="space-y-3">
     <input
+      ref="input"
       type="file"
       :accept="accept"
       :disabled="uploading"
-      @change="chooseFile"
       class="block w-full text-sm"
+      @change="pilihFile"
     />
 
     <div class="flex items-center gap-3">
-      <Button :disabled="!selectedFile || uploading" @click="upload">
+      <span
+        v-if="file"
+        class="text-sm text-muted-foreground truncate"
+      >
+        {{ file.name }}
+      </span>
+
+      <Button
+        type="button"
+        :disabled="!file || uploading"
+        @click="upload"
+      >
         {{ uploading ? 'Mengupload...' : 'Upload File' }}
       </Button>
-      <span v-if="selectedFile" class="text-sm text-muted-foreground">
-        {{ selectedFile.name }}
-      </span>
     </div>
 
-    <p v-if="error" class="text-sm text-destructive">{{ error }}</p>
+    <p v-if="errorMessage" class="text-sm text-destructive">
+      {{ errorMessage }}
+    </p>
   </div>
 </template>
+```

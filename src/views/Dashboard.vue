@@ -5,19 +5,9 @@ import { Combobox } from '@/components/ui/combobox'
 import { Input } from '@/components/ui/input'
 import { useUserStore } from '@/stores/userStore'
 import { useJabatanStore } from '@/stores/jabatanStore'
-
-import {
-  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
-} from '@/components/ui/dialog'
-
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from '@/components/ui/table'
-
-import {
-  Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationNext, PaginationPrevious,
-} from '@/components/ui/pagination'
-
+import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,} from '@/components/ui/dialog'
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from '@/components/ui/table'
+import {Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationNext, PaginationPrevious,} from '@/components/ui/pagination'
 import { Briefcase, Loader2, Pencil, Search, ShieldCheck, Trash2, User, Users } from 'lucide-vue-next'
 
 const userStore = useUserStore()
@@ -50,8 +40,11 @@ function refreshData() {
 
 onMounted(() => {
   refreshData()
-  jabatanStore.fetchJabatan()
 })
+
+function onJabatanOpenChange(open) {
+  if (open) jabatanStore.fetchJabatan()
+}
 
 watch(currentPage, () => {
   refreshData()
@@ -221,7 +214,7 @@ async function konfirmasiHapus() {
               </TableCell>
               <TableCell class="action-buttons">
                 <Button variant="outline" size="sm" class="edit-buttons" :disabled="isSubmitting || isDeleting" @click="editData(item)"><Pencil class="button-icon" /></Button>
-                <Button variant="destructive" size="sm" class="delete-buttons" :disabled="isSubmitting || isDeleting" @click="bukaModalHapus(item)"><Trash2 class="button-icon" /></Button>
+                <Button variant="outline" size="sm" class="delete-buttons" :disabled="isSubmitting || isDeleting" @click="bukaModalHapus(item)"><Trash2 class="button-icon-delete" /></Button>
               </TableCell>
             </TableRow>
           </TableBody>
@@ -270,7 +263,7 @@ async function konfirmasiHapus() {
         <form class="modal-form" @submit.prevent="simpanData">
           <div class="form-group"><label for="nama">Nama Lengkap</label><Input id="nama" v-model="namaInput" :disabled="isSubmitting" placeholder="Masukkan nama..." /></div>
           <div class="form-group"><label for="email">Email</label><Input id="email" v-model="emailInput" type="email" :disabled="isSubmitting" placeholder="Masukkan email..." /></div>
-          <div class="form-group"><label for="peran">Jabatan</label><Combobox id="peran" v-model="peranInput" :options="daftarJabatanNama" placeholder="Pilih Jabatan..." :disabled="isSubmitting || jabatanStore.isLoading" /></div>
+          <div class="form-group"><label for="peran">Jabatan</label><Combobox id="peran" v-model="peranInput" :options="daftarJabatanNama" placeholder="Pilih Jabatan..." :empty-text="jabatanStore.isLoading ? 'Memuat jabatan...' : 'Tidak ada hasil.'" :disabled="isSubmitting" @update:open="onJabatanOpenChange" /></div>
           <p v-if="errorMessage" class="form-error">{{ errorMessage }}</p>
           <DialogFooter>
             <Button type="button" variant="outline" :disabled="isSubmitting" @click="tutupModalForm">Batal</Button>
@@ -460,6 +453,13 @@ async function konfirmasiHapus() {
   height: 15px;
 }
 
+.button-icon-delete {
+  width: 15px;
+  height: 15px;
+  color: #ff1414e4;
+}
+
+
 .loading-state {
   display: flex;
   align-items: center;
@@ -527,16 +527,12 @@ async function konfirmasiHapus() {
   color: #4b5563;
 }
 
-.edit-buttons {
-  background-color: rgb(246, 246, 28);
-}
-
 .edit-buttons:hover {
-  background-color: rgb(188, 188, 22);
+  background-color: rgba(153, 153, 147, 0.419);
 }
 
 .delete-buttons:hover {
-  background-color: rgb(136, 13, 13);
+  background-color: rgba(153, 153, 147, 0.419);
 }
 
 .pagination-footer {
