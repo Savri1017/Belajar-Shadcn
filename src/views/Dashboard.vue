@@ -34,9 +34,6 @@ const emailInput = ref('')
 const peranInput = ref('')
 const idEdit = ref(null)
 const errorMessage = ref('')
-const namaError = ref('')
-const emailError = ref('')
-const peranError = ref('')
 const deleteErrorMessage = ref('')
 const searchQuery = ref('')
 const itemsPerPage = 10
@@ -53,8 +50,11 @@ function refreshData() {
 
 onMounted(() => {
   refreshData()
-  jabatanStore.fetchJabatan()
 })
+
+function onJabatanOpenChange(open) {
+  if (open) jabatanStore.fetchJabatan()
+}
 
 watch(currentPage, () => {
   refreshData()
@@ -71,30 +71,13 @@ watch(searchQuery, () => {
   }, 400)
 })
 
-watch(namaInput, () => {
-  if (namaError.value) namaError.value = ''
-})
-watch(emailInput, () => {
-  if (emailError.value) emailError.value = ''
-})
-watch(peranInput, () => {
-  if (peranError.value) peranError.value = ''
-})
-
-function resetFormErrors() {
-  errorMessage.value = ''
-  namaError.value = ''
-  emailError.value = ''
-  peranError.value = ''
-}
-
 function bukaModalTambah() {
   if (isSubmitting.value || isDeleting.value) return
   idEdit.value = null
   namaInput.value = ''
   emailInput.value = ''
   peranInput.value = ''
-  resetFormErrors()
+  errorMessage.value = ''
   isModalOpen.value = true
 }
 
@@ -104,7 +87,7 @@ function editData(item) {
   namaInput.value = item.nama
   emailInput.value = item.email
   peranInput.value = item.peran
-  resetFormErrors()
+  errorMessage.value = ''
   isModalOpen.value = true
 }
 
@@ -115,14 +98,12 @@ function tutupModalForm() {
 async function simpanData() {
   if (isSubmitting.value) return
   errorMessage.value = ''
-  namaError.value = !namaInput.value.trim() ? 'Nama wajib diisi.' : ''
-  emailError.value = !emailInput.value.trim() ? 'Email wajib diisi.' : ''
-  peranError.value = !peranInput.value.trim() ? 'Jabatan wajib diisi.' : ''
-  if (namaError.value || emailError.value || peranError.value) {
+  if (!namaInput.value.trim() || !emailInput.value.trim() || !peranInput.value.trim()) {
+    errorMessage.value = 'Nama, Email, dan Jabatan wajib diisi.'
     return
   }
   if (!daftarJabatanNama.value.includes(peranInput.value.trim())) {
-    peranError.value = 'Jabatan harus dipilih dari daftar yang tersedia.'
+    errorMessage.value = 'Jabatan harus dipilih dari daftar yang tersedia.'
     return
   }
   const payload = {
@@ -243,7 +224,7 @@ async function konfirmasiHapus() {
               </TableCell>
               <TableCell class="action-buttons">
                 <Button variant="outline" size="sm" class="edit-buttons" :disabled="isSubmitting || isDeleting" @click="editData(item)"><Pencil class="button-icon" /></Button>
-                <Button variant="outline" size="sm" class="delete-buttons" :disabled="isSubmitting || isDeleting" @click="bukaModalHapus(item)"><Trash2 class="button-icon-delete" /></Button>
+                <Button variant="destructive" size="sm" class="delete-buttons" :disabled="isSubmitting || isDeleting" @click="bukaModalHapus(item)"><Trash2 class="button-icon" /></Button>
               </TableCell>
             </TableRow>
           </TableBody>
@@ -290,21 +271,9 @@ async function konfirmasiHapus() {
           <DialogDescription>{{ idEdit !== null ? 'Perbarui informasi pengguna.' : 'Isi data pengguna baru di bawah ini.' }}</DialogDescription>
         </DialogHeader>
         <form class="modal-form" @submit.prevent="simpanData">
-          <div class="form-group">
-            <label for="nama">Nama Lengkap</label>
-            <Input id="nama" v-model="namaInput" :disabled="isSubmitting" placeholder="Masukkan nama..." :aria-invalid="!!namaError" />
-            <p v-if="namaError" class="field-error">{{ namaError }}</p>
-          </div>
-          <div class="form-group">
-            <label for="email">Email</label>
-            <Input id="email" v-model="emailInput" type="email" :disabled="isSubmitting" placeholder="Masukkan email..." :aria-invalid="!!emailError" />
-            <p v-if="emailError" class="field-error">{{ emailError }}</p>
-          </div>
-          <div class="form-group">
-            <label for="peran">Jabatan</label>
-            <Combobox id="peran" v-model="peranInput" :options="daftarJabatanNama" placeholder="Pilih Jabatan..." :disabled="isSubmitting || jabatanStore.isLoading" :class="peranError ? 'border-destructive ring-destructive/20 dark:ring-destructive/40' : ''" />
-            <p v-if="peranError" class="field-error">{{ peranError }}</p>
-          </div>
+          <div class="form-group"><label for="nama">Nama Lengkap</label><Input id="nama" v-model="namaInput" :disabled="isSubmitting" placeholder="Masukkan nama..." /></div>
+          <div class="form-group"><label for="email">Email</label><Input id="email" v-model="emailInput" type="email" :disabled="isSubmitting" placeholder="Masukkan email..." /></div>
+          <div class="form-group"><label for="peran">Jabatan</label><Combobox id="peran" v-model="peranInput" :options="daftarJabatanNama" placeholder="Pilih Jabatan..." :empty-text="jabatanStore.isLoading ? 'Memuat jabatan...' : 'Tidak ada hasil.'" :disabled="isSubmitting" @update:open="onJabatanOpenChange" /></div>
           <p v-if="errorMessage" class="form-error">{{ errorMessage }}</p>
           <DialogFooter>
             <Button type="button" variant="outline" :disabled="isSubmitting" @click="tutupModalForm">Batal</Button>
@@ -494,13 +463,6 @@ async function konfirmasiHapus() {
   height: 15px;
 }
 
-.button-icon-delete {
-  width: 15px;
-  height: 15px;
-  color: #ff1414;
-}
-
-
 .loading-state {
   display: flex;
   align-items: center;
@@ -545,12 +507,6 @@ async function konfirmasiHapus() {
   font-size: 0.875rem;
 }
 
-.field-error {
-  color: #ff1414;
-  font-size: 0.8rem;
-  margin-top: -2px;
-}
-
 .peran-badge {
   display: inline-block;
   font-size: 0.75rem;
@@ -574,12 +530,16 @@ async function konfirmasiHapus() {
   color: #4b5563;
 }
 
+.edit-buttons {
+  background-color: rgb(246, 246, 28);
+}
+
 .edit-buttons:hover {
-  background-color: rgba(161, 161, 155, 0.458);
+  background-color: rgb(188, 188, 22);
 }
 
 .delete-buttons:hover {
-  background-color:  rgba(161, 161, 155, 0.458);
+  background-color: rgb(136, 13, 13);
 }
 
 .pagination-footer {

@@ -1,133 +1,65 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Loader2, FileText, Trash2, Camera } from 'lucide-vue-next'
-import { useUserStore, ID_PENGGUNA_AKTIF } from '@/stores/userStore'
-import { getMedia, uploadMedia, deleteMedia } from '@/services/media.js'
-import FileUploader from '@/components/FileUploader.vue'
+import { Combobox } from '@/components/ui/combobox'
+import { useJabatanStore } from '@/stores/jabatanStore'
 
-const STORAGE_URL = 'http://localhost:8000/storage'
+const jabatanStore = useJabatanStore()
+const daftarJabatanNama = computed(() => jabatanStore.daftarJabatan.map((j) => j.nama_jabatan))
 
-const userStore = useUserStore()
-
-const sedangEdit = ref(false)
-const isSaving = ref(false)
-const namaInput = ref('')
-const emailInput = ref('')
-const peranInput = ref('')
-const errorSimpan = ref('')
-
-// --- Avatar (collection: 'avatar') ---
-// Data avatar diambil dari userStore (bukan state lokal) supaya
-// Navbar.vue bisa ikut nampilin avatar yang sama & auto-update.
-const isUploadingAvatar = ref(false)
-const errorAvatar = ref('')
-const inputFileAvatar = ref(null)
-
-const avatarUrl = computed(() => userStore.avatarUrl ?? 'https://github.com/shadcn.png')
-
-// --- Dokumen pendukung (collection: 'dokumen') ---
-// Beda "label" doang dari avatar, tapi baris-barisnya kesimpan
-// di tabel `media` yang SAMA PERSIS lewat relasi morphMany yang sama.
-const daftarDokumen = ref([])
-const isLoadingDokumen = ref(false)
-const errorDokumen = ref('')
-
-async function muatProfil() {
-  const berhasil = await userStore.fetchPenggunaById(ID_PENGGUNA_AKTIF)
-  if (berhasil && userStore.penggunaAktif) {
-    namaInput.value = userStore.penggunaAktif.nama
-    emailInput.value = userStore.penggunaAktif.email
-    peranInput.value = userStore.penggunaAktif.peran
-  }
-}
-
-async function muatDokumen() {
-  isLoadingDokumen.value = true
-  try {
-    const response = await getMedia('pengguna', ID_PENGGUNA_AKTIF, 'dokumen')
-    daftarDokumen.value = response.data
-  } catch (error) {
-    console.error('Gagal ambil dokumen:', error)
-  } finally {
-    isLoadingDokumen.value = false
-  }
-}
-
-onMounted(async () => {
-  await muatProfil()
-  await userStore.fetchAvatarAktif()
-  await muatDokumen()
+const profil = ref({
+  nama: 'Budi Santoso',
+  email: 'budi@gmail.com',
+  peran: 'Admin',
 })
 
-async function simpanProfil() {
-  if (isSaving.value) return
-  errorSimpan.value = ''
-  if (!namaInput.value.trim() || !emailInput.value.trim() || !peranInput.value.trim()) {
-    errorSimpan.value = 'Nama, Email, dan Peran wajib diisi.'
-    return
-  }
-  isSaving.value = true
-  try {
-    const berhasil = await userStore.updatePengguna(ID_PENGGUNA_AKTIF, {
-      nama: namaInput.value.trim(),
-      email: emailInput.value.trim(),
-      peran: peranInput.value.trim(),
-    })
-    if (!berhasil) {
-      errorSimpan.value = 'Gagal menyimpan perubahan. Coba lagi.'
-      return
-    }
-    sedangEdit.value = false
-  } finally {
-    isSaving.value = false
-  }
+const sedangEdit = ref(false)
+
+// Setiap field punya slot error sendiri, jadi peringatan bisa muncul
+// tepat di bawah kolom yang bermasalah, bukan jadi satu pesan gabungan.
+const errors = ref({ nama: '', email: '', peran: '' })
+
+function onJabatanOpenChange(open) {
+  if (open) jabatanStore.fetchJabatan()
 }
 
-function bukaPilihAvatar() {
-  inputFileAvatar.value?.click()
-}
+function validasiForm() {
+  errors.value = { nama: '', email: '', peran: '' }
+  let valid = true
 
-async function gantiAvatar(event) {
-  const file = event.target.files?.[0]
-  event.target.value = '' // biar bisa pilih file yang sama lagi kalau perlu
-  if (!file) return
-
-  errorAvatar.value = ''
-  isUploadingAvatar.value = true
-  try {
-    // Hapus avatar lama dulu (kalau ada) supaya 1 pengguna cuma
-    // punya 1 baris 'avatar' yang aktif di tabel media, bukan menumpuk.
-    if (userStore.avatarAktif) {
-      await deleteMedia(userStore.avatarAktif.id)
-    }
-    await uploadMedia('pengguna', ID_PENGGUNA_AKTIF, file, 'avatar')
-    // Refresh lewat store (bukan state lokal) -> Navbar.vue yang juga
-    // baca userStore.avatarUrl otomatis ikut ke-update saat ini selesai.
-    await userStore.fetchAvatarAktif()
-  } catch (err) {
-    errorAvatar.value = err.response?.data?.message || 'Upload foto profil gagal.'
-  } finally {
-    isUploadingAvatar.value = false
+  if (!profil.value.nama.trim()) {
+    errors.value.nama = 'Nama tidak boleh kosong.'
+    valid = false
   }
-}
 
-async function hapusDokumen(media) {
-  errorDokumen.value = ''
-  try {
-    await deleteMedia(media.id)
-    await muatDokumen()
-  } catch (err) {
-    errorDokumen.value = err.response?.data?.message || 'Gagal menghapus dokumen.'
+  if (!profil.value.email.trim()) {
+    errors.value.email = 'Email tidak boleh kosong.'
+    valid = false
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profil.value.email.trim())) {
+    errors.value.email = 'Format email tidak valid.'
+    valid = false
   }
+
+  if (!profil.value.peran.trim()) {
+    errors.value.peran = 'Jabatan tidak boleh kosong.'
+    valid = false
+  } else if (!daftarJabatanNama.value.includes(profil.value.peran.trim())) {
+    errors.value.peran = 'Jabatan harus dipilih dari daftar yang tersedia.'
+    valid = false
+  }
+
+  return valid
 }
 
-function formatUkuran(bytes) {
-  if (!bytes) return '-'
-  const kb = bytes / 1024
-  if (kb < 1024) return `${kb.toFixed(0)} KB`
-  return `${(kb / 1024).toFixed(1)} MB`
+function mulaiEdit() {
+  errors.value = { nama: '', email: '', peran: '' }
+  sedangEdit.value = true
+}
+
+function simpanProfil() {
+  if (!validasiForm()) return
+  sedangEdit.value = false
 }
 </script>
 
@@ -136,69 +68,65 @@ function formatUkuran(bytes) {
     <h2>Profil</h2>
 
     <div class="profil-card">
-      <div v-if="userStore.isLoadingProfil" class="loading-state">
-        <Loader2 class="loading-icon" /><span>Memuat data profil...</span>
+      <div class="profil-header">
+        <Avatar class="profil-avatar">
+          <AvatarImage src="https://github.com/shadcn.png" alt="Foto profil" />
+          <AvatarFallback>CN</AvatarFallback>
+        </Avatar>
+        <div>
+          <p class="profil-nama">{{ profil.nama }}</p>
+          <p class="profil-peran">{{ profil.peran }}</p>
+        </div>
       </div>
 
-      <template v-else>
-        <div class="profil-header">
-          <div class="avatar-wrapper">
-            <Avatar class="profil-avatar">
-              <AvatarImage :src="avatarUrl" alt="Foto profil" />
-              <AvatarFallback>{{ namaInput.slice(0, 2).toUpperCase() }}</AvatarFallback>
-            </Avatar>
-            <button
-              type="button"
-              class="avatar-edit-btn"
-              :disabled="isUploadingAvatar"
-              title="Ganti foto profil"
-              @click="bukaPilihAvatar"
-            >
-              <Loader2 v-if="isUploadingAvatar" class="button-icon spinner" />
-              <Camera v-else class="button-icon" />
-            </button>
-            <input
-              ref="inputFileAvatar"
-              type="file"
-              accept="image/png,image/jpeg,image/webp"
-              class="hidden-input"
-              @change="gantiAvatar"
-            />
-          </div>
-          <div>
-            <p class="profil-nama">{{ namaInput || '-' }}</p>
-            <p class="profil-peran">{{ peranInput || '-' }}</p>
-          </div>
+      <div class="profil-info">
+        <div class="info-row">
+          <span class="info-label">Nama Lengkap</span>
+          <input
+            v-model="profil.nama"
+            :readonly="!sedangEdit"
+            class="info-value"
+            :class="{ 'info-value-error': errors.nama }"
+            @input="errors.nama = ''"
+          />
+          <p v-if="errors.nama" class="field-error">{{ errors.nama }}</p>
         </div>
-        <p v-if="errorAvatar" class="form-error">{{ errorAvatar }}</p>
-
-        <div class="profil-info">
-          <div class="info-row">
-            <span class="info-label">Nama Lengkap</span>
-            <input v-model="namaInput" :readonly="!sedangEdit" class="info-value" />
-          </div>
-          <div class="info-row">
-            <span class="info-label">Email</span>
-            <input v-model="emailInput" :readonly="!sedangEdit" class="info-value" />
-          </div>
-          <div class="info-row">
-            <span class="info-label">Peran</span>
-            <input v-model="peranInput" :readonly="!sedangEdit" class="info-value" />
-          </div>
+        <div class="info-row">
+          <span class="info-label">Email</span>
+          <input
+            v-model="profil.email"
+            :readonly="!sedangEdit"
+            class="info-value"
+            :class="{ 'info-value-error': errors.email }"
+            @input="errors.email = ''"
+          />
+          <p v-if="errors.email" class="field-error">{{ errors.email }}</p>
         </div>
-
-        <p v-if="errorSimpan" class="form-error">{{ errorSimpan }}</p>
-
-        <div class="profil-actions">
-          <Button v-if="!sedangEdit" variant="outline" @click="sedangEdit = true">
-            Edit Profil
-          </Button>
-          <Button v-else :disabled="isSaving" @click="simpanProfil">
-            <Loader2 v-if="isSaving" class="button-icon spinner" />
-            {{ isSaving ? 'Menyimpan...' : 'Simpan Perubahan' }}
-          </Button>
+        <div class="info-row">
+          <span class="info-label">Jabatan</span>
+          <input v-if="!sedangEdit" :value="profil.peran" readonly class="info-value" />
+          <Combobox
+            v-else
+            v-model="profil.peran"
+            :options="daftarJabatanNama"
+            placeholder="Pilih Jabatan..."
+            :empty-text="jabatanStore.isLoading ? 'Memuat jabatan...' : 'Tidak ada hasil.'"
+            :class="{ 'info-value-error': errors.peran }"
+            @update:open="onJabatanOpenChange"
+            @update:model-value="errors.peran = ''"
+          />
+          <p v-if="errors.peran" class="field-error">{{ errors.peran }}</p>
         </div>
-      </template>
+      </div>
+
+      <div class="profil-actions">
+        <Button v-if="!sedangEdit" variant="outline" @click="mulaiEdit">
+          Edit Profil
+        </Button>
+        <Button v-else @click="simpanProfil">
+          Simpan Perubahan
+        </Button>
+      </div>
     </div>
   </div>
 </template>
@@ -222,41 +150,12 @@ function formatUkuran(bytes) {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-bottom: 8px;
-}
-
-.avatar-wrapper {
-  position: relative;
+  margin-bottom: 24px;
 }
 
 .profil-avatar {
   width: 56px;
   height: 56px;
-}
-
-.avatar-edit-btn {
-  position: absolute;
-  bottom: -2px;
-  right: -2px;
-  width: 22px;
-  height: 22px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  background-color: #2563eb;
-  color: #fff;
-  border: 2px solid #fff;
-  cursor: pointer;
-}
-
-.avatar-edit-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.hidden-input {
-  display: none;
 }
 
 .profil-nama {
@@ -274,7 +173,7 @@ function formatUkuran(bytes) {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  margin: 20px 0;
+  margin-bottom: 20px;
 }
 
 .info-row {
@@ -309,119 +208,19 @@ function formatUkuran(bytes) {
   border-color: #2563eb;
 }
 
+.info-value-error,
+:deep(.info-value-error) {
+  border-color: #dc2626 !important;
+}
+
+.field-error {
+  color: #dc2626;
+  font-size: 0.75rem;
+  margin-top: 2px;
+}
+
 .profil-actions {
   display: flex;
   justify-content: flex-end;
-}
-
-.button-icon {
-  width: 14px;
-  height: 14px;
-}
-
-.spinner {
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.loading-state {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 0;
-  color: #6b7280;
-  font-size: 0.875rem;
-}
-
-.form-error {
-  color: #ff1414;
-  font-size: 0.8rem;
-  margin: 4px 0 0;
-}
-
-.dokumen-card {
-  margin-top: 20px;
-}
-
-.dokumen-title {
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-
-.dokumen-desc {
-  font-size: 0.8rem;
-  color: #6b7280;
-  margin-bottom: 16px;
-}
-
-.dokumen-desc code {
-  background-color: #f3f4f6;
-  padding: 1px 5px;
-  border-radius: 4px;
-}
-
-.dokumen-empty {
-  font-size: 0.8rem;
-  color: #9ca3af;
-  margin-top: 12px;
-}
-
-.dokumen-list {
-  list-style: none;
-  padding: 0;
-  margin: 14px 0 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.dokumen-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  font-size: 0.85rem;
-}
-
-.dokumen-icon {
-  width: 16px;
-  height: 16px;
-  color: #6b7280;
-  flex-shrink: 0;
-}
-
-.dokumen-nama {
-  flex: 1;
-  color: #2563eb;
-  text-decoration: none;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.dokumen-nama:hover {
-  text-decoration: underline;
-}
-
-.dokumen-ukuran {
-  font-size: 0.75rem;
-  color: #9ca3af;
-}
-
-.dokumen-hapus {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #dc2626;
-  cursor: pointer;
-  border: none;
-  background: none;
-  padding: 4px;
 }
 </style>
