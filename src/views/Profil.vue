@@ -367,7 +367,7 @@ async function simpanProfil() {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 30px;
 }
 
 .foto-wrapper {
